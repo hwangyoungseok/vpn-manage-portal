@@ -1,0 +1,48 @@
+# Windows 시스템 파일
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# macOS 시스템 파일
+.DS_Store
+.AppleDouble/
+.LSOverride
+._*
+.Spotlight-V100/
+.Trashes/
+.fseventsd/
+.TemporaryItems/
+
+
+# .NET 빌드 및 배포 결과
+[Bb]in/
+[Oo]bj/
+artifacts/
+publish/
+
+# Visual Studio / Rider 사용자 설정
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# 테스트 및 코드 커버리지 결과
+[Tt]est[Rr]esults/
+coverage/
+*.coverage
+*.coveragexml
+coverage.json
+coverage.xml
+coverage.info
+coverage.cobertura.xml
+
+# NuGet 복원 및 패키지 결과
+packages/
+*.nupkg
+*.snupkg
+
