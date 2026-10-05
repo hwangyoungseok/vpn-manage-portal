@@ -5,7 +5,8 @@
 - **프로젝트명**: RemoteHub (레포명: remote-access-hub)
 - **목적**: 회사 재택근무를 위한 VPN 관리 서비스
 - **스택**: ASP.NET Core, EF Core, SQL Server
-- **아키텍처**: Layed DDD, 모놀리식 
+- **아키텍처**: Layed DDD, 모놀리식
+- **화면 목업**: `mockup/` (React + shadcn/ui) — 화면 디자인 합의용 프로토타입이다. 제품 코드가 아니며 React를 제품에 도입하지 않는다.
 
 자세한 내용은 [프로젝트 개요 / 기술 스택](./docs/02.project-overview.md)을 참고한다.
 

@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: RemoteHub의 코드를 읽기 전용으로 리뷰한다. ASP.NET Core·EF Core·SQL Server와 계층형 DDD, MVC·Razor 화면의 버그·보안·성능·테스트를 검토하며 React는 도입이 확정된 경우 검토한다.
+description: RemoteHub의 코드를 읽기 전용으로 리뷰한다. ASP.NET Core·EF Core·SQL Server와 계층형 DDD, MVC·Razor 화면의 버그·보안·성능·테스트를 검토한다. `mockup/`은 디자인 프로토타입이므로 리뷰 대상이 아니다.
 tools: Read, Glob, Grep, Bash
 model: sonnet
 skills:
@@ -15,7 +15,7 @@ skills:
 - 변경된 코드와 영향받는 경로를 읽고 요구사항 충족 여부, 버그, 보안, 성능, 테스트를 검토한다.
 - 코드를 수정하거나 자동 포맷하지 않고, 확인한 문제와 개선 방향을 보고한다.
 - 검토 기준은 C#, ASP.NET Core, EF Core, SQL Server, 계층형 DDD 모놀리식 구조다.
-- 현재 화면 구현은 ASP.NET Core MVC와 Razor View를 기준으로 한다. React는 도입 여부와 범위가 확정된 경우에만 관련 규칙을 적용한다.
+- 화면 구현은 ASP.NET Core MVC와 Razor View를 기준으로 한다. `mockup/`은 디자인 프로토타입이므로 제품 코드 리뷰 대상이 아니다.
 
 [AGENTS.md](../../AGENTS.md), [요구사항](../../docs/00-requirements.md), [개발 워크플로우](../../docs/01-workflow.md), [프로젝트 개요](../../docs/02.project-overview.md)를 확인한다. 구체적인 구현 기준은 [백엔드 에이전트](./backend-dev.md)와 [프론트엔드 에이전트](./frontend-dev.md), 실제 프로젝트 설정을 함께 참고한다.
 
@@ -77,12 +77,10 @@ skills:
 - 화면의 빈 상태·실패·진행 상태, 중복 제출 방지, 필드 레이블과 키보드 접근을 관련 변경에 맞게 확인한다.
 - 프론트엔드와 백엔드가 ViewModel·DTO·응답 계약을 일관되게 사용하는지 확인한다.
 
-### 7. React 관련 검토 — 도입 확정 시
+### 7. 목업 디렉터리
 
-- 확정된 도입 범위와 MVC 공존 방식, 인증·라우팅·배포 구조를 따르는지 확인한다.
-- 컴포넌트·상태·이벤트 처리와 API 오류 처리가 프로젝트의 규칙에 맞는지 검토한다.
-- JavaScript/TypeScript, 빌드 도구, 스타일과 테스트 도구는 실제로 채택한 설정을 기준으로 한다.
-- 도입 전에는 React 전용 구조, 상태 관리 라이브러리, 전체 기능의 별도 API화를 요구하지 않는다.
+- `mockup/`은 디자인 프로토타입이므로 제품 코드 리뷰 대상이 아니다. 지적하지 않는다.
+- 제품 코드에 React·TypeScript·프런트엔드 빌드 도구가 유입되었으면 결함으로 보고한다.
 
 ### 8. 테스트와 검증 근거
 

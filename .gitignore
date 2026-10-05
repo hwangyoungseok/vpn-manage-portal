@@ -46,3 +46,40 @@ packages/
 *.nupkg
 *.snupkg
 
+
+# Node.js / 프런트엔드 (mockup/ 등)
+node_modules/
+.pnp
+.pnp.*
+jspm_packages/
+
+# 패키지 매니저 로그
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+logs/
+*.log
+
+# 빌드 결과
+dist/
+dist-ssr/
+build/
+out/
+.vite/
+*.tsbuildinfo
+
+# 캐시
+.eslintcache
+.stylelintcache
+.npm/
+.cache/
+.temp/
+.turbo/
+
+# 환경 변수 (예시 파일은 추적한다)
+.env
+.env.*
+!.env.example
+*.local

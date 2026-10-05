@@ -66,7 +66,7 @@ ASP.NET Core, EF Core, SQL Server 기반의 계층형 DDD 모놀리식 구조에
 |----------|------|-----------------|-----------|
 | **planner** | 계층별 태스크 분해/할당, 의존 관계 조율, PLAN.md 관리 | sync, next, done, blocked, ref | - |
 | **backend-dev** | ASP.NET Core API, 도메인·애플리케이션 로직, EF Core 매핑·마이그레이션, SQL Server 연동 구현 | ref, done, blocked, review, test | API 계약 확정 후 frontend-dev와 병렬 |
-| **frontend-dev** | VPN 관리 화면, 사용자 입력 검증, 백엔드 API 연동 구현. UI 기술은 프로젝트에서 확정한 방식을 따른다 | ref, done, blocked, review, test | API 계약 확정 후 backend-dev와 병렬 |
+| **frontend-dev** | VPN 관리 화면(MVC + Razor), 사용자 입력 검증, 백엔드 API 연동 구현. `mockup/`은 디자인 참조용 React 프로토타입 | ref, done, blocked, review, test | API 계약 확정 후 backend-dev와 병렬 |
 | **researcher** | .NET 기술, LDAP 인증 및 VPN 연동 API 조사, references/ 저장 | ref, save-ref | 조사 결과에 의존하지 않는 작업과 병렬 |
 | **reviewer** | 계층 간 의존 관계, 인증·권한, EF Core 쿼리·마이그레이션, 테스트 검토 (읽기 전용) | ref, review | - |
 
