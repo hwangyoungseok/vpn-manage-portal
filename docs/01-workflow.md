@@ -41,7 +41,7 @@
 7. **조사 완료 시**: 새로 알게 된 기술 정보는 `/save-ref`로 반드시 저장
 8. **전체 워크플로우**: `/implement-task`로 선택→구현→검증→기록까지 한번에 수행
 
-### 사용 가능한 스킬 (`.agents/skills/`)
+### 사용 가능한 스킬 (Claude Code: `.claude/skills/` · Codex: `.agents/skills/`)
 
 | 스킬 | 용도 | 예시 |
 |------|------|------|
@@ -58,7 +58,7 @@
 | `/ref` | 레퍼런스 검색/조회 | `/ref gmail oauth`, `/ref --tag api`, `/ref --list` |
 | `/save-ref` | 조사 결과를 레퍼런스로 저장 | `/save-ref f5 VPN API 조사 결과` |
 
-### 서브에이전트 (`.agents/agents/`)
+### 서브에이전트 (Claude Code: `.claude/agents/` · Codex: `.agents/agents/`)
 
 ASP.NET Core, EF Core, SQL Server 기반의 계층형 DDD 모놀리식 구조에 맞춰 태스크를 전문 에이전트에게 위임한다. 병렬 작업은 담당 파일과 의존 관계가 분리된 경우에 수행한다.
 

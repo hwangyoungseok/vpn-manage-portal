@@ -1,0 +1,25 @@
+# 기본: 텍스트 파일은 저장소와 작업 복사본 모두 LF로 통일한다.
+# core.autocrlf 설정과 무관하게 동작하므로 OS/도구가 달라도 결과가 같다.
+* text=auto eol=lf
+
+# Windows 도구가 CRLF로 다시 쓰는 파일은 CRLF를 유지해 불필요한 변경을 막는다.
+*.sln       text eol=crlf
+*.csproj    text eol=crlf
+*.props     text eol=crlf
+*.targets   text eol=crlf
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+*.ps1       text eol=crlf
+
+# 바이너리: 줄바꿈 변환과 텍스트 diff 대상에서 제외한다.
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.pdf       binary
+*.zip       binary
+*.dll       binary
+*.exe       binary
+*.pfx       binary
+*.snk       binary
