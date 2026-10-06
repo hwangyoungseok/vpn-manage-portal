@@ -3,11 +3,11 @@ import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Link2, Plus, Trash2 } from 'lucide-react'
 
 import { PageHeader } from '@/components/layout/page-header'
+import { AclForm } from '@/components/acl-form'
 import { StatusBadge, UserTypeBadge } from '@/components/status-badge'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -26,18 +26,41 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { accounts, acls } from '@/data/mock'
+import type { Account, Acl } from '@/data/mock'
+import { useMockStore } from '@/data/use-mock-store'
 import { maskName } from '@/lib/format'
 
 // P0-8 계정 상세 · 정책 편집 (요구사항 §1.2).
 // ACL 신규 생성 방식과 기존 ACL 매핑 방식 두 가지를 모두 보여준다.
 export function AccountDetailPage() {
   const { id } = useParams()
-  const account = accounts.find((a) => a.id === id) ?? accounts[0]
-  const [mode, setMode] = useState<'map' | 'create'>('map')
+  const [notice, setNotice] = useState('')
+  const { accounts } = useMockStore()
+  const account = accounts.find((a) => a.id === id)
+  if (!account) return <p>계정을 찾을 수 없습니다. <Link to="/accounts" className="underline">목록으로 돌아가기</Link></p>
+  return <>
+    {notice ? <p role="status" className="mb-4 text-sm text-emerald-700 dark:text-emerald-400">{notice}</p> : null}
+    <AccountPolicyEditor key={`${account.id}:${account.acls.join(',')}`} account={account} onNotice={setNotice} />
+  </>
+}
 
-  const applied = acls.filter((acl) => account.acls.includes(acl.name))
-  const available = acls.filter((acl) => !account.acls.includes(acl.name))
+function AccountPolicyEditor({ account, onNotice }: { account: Account; onNotice: (notice: string) => void }) {
+  const { acls, savePolicies } = useMockStore()
+  const [mode, setMode] = useState<'map' | 'create'>('map')
+  const [names, setNames] = useState(account.acls)
+  const [created, setCreated] = useState<Acl[]>([])
+  const [selected, setSelected] = useState<string | null>(null)
+  const [error, setError] = useState<string>()
+  const allAcls = [...acls, ...created]
+  const applied = allAcls.filter((acl) => names.includes(acl.name))
+  const available = allAcls.filter((acl) => !names.includes(acl.name))
+  const dirty = names.length !== account.acls.length || names.some((name) => !account.acls.includes(name))
+
+  function changeNames(next: string[]) {
+    setNames(next)
+    onNotice('')
+    setError(undefined)
+  }
 
   const fields = [
     { label: '계정', value: account.account, mono: true },
@@ -68,10 +91,16 @@ export function AccountDetailPage() {
             <Button variant="outline" size="sm">
               기간 연장
             </Button>
-            <Button size="sm">변경 사항 적용</Button>
+            <Button size="sm" disabled={!dirty} onClick={() => {
+              const failure = savePolicies(account.id, names, created.filter((acl) => names.includes(acl.name)))
+              setError(failure)
+              if (!failure) { setCreated([]); onNotice('정책 변경을 저장했습니다.') }
+            }}>변경 사항 적용</Button>
           </>
         }
       />
+      {error ? <p role="alert" className="text-destructive mb-4 text-sm">{error}</p> : null}
+      {dirty ? <p role="status" className="text-muted-foreground mb-4 text-sm">저장하지 않은 정책 변경이 있습니다. ‘변경 사항 적용’을 눌러 저장하세요.</p> : null}
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-1">
@@ -131,7 +160,7 @@ export function AccountDetailPage() {
                           </div>
                           <p className="text-muted-foreground mt-0.5 text-xs">{acl.description}</p>
                         </div>
-                        <Button variant="ghost" size="icon" aria-label="정책 제거">
+                        <Button variant="ghost" size="icon" aria-label={`${acl.name} 정책 제거`} onClick={() => changeNames(names.filter((name) => name !== acl.name))}>
                           <Trash2 className="size-4" />
                         </Button>
                       </div>
@@ -146,7 +175,7 @@ export function AccountDetailPage() {
                         </TableHeader>
                         <TableBody>
                           {acl.entries.map((e) => (
-                            <TableRow key={`${acl.id}-${e.destination}-${e.port}`}>
+                            <TableRow key={`${acl.id}-${e.destination}-${e.port}-${e.protocol}`}>
                               <TableCell className="font-mono text-xs">{e.destination}</TableCell>
                               <TableCell className="font-mono text-xs">{e.port}</TableCell>
                               <TableCell className="text-muted-foreground text-xs">
@@ -182,7 +211,7 @@ export function AccountDetailPage() {
                   연계됩니다.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <Select>
+                  <Select value={selected} onValueChange={setSelected}>
                     <SelectTrigger className="min-w-[240px] flex-1">
                       <SelectValue placeholder="매핑할 ACL 선택" />
                     </SelectTrigger>
@@ -194,7 +223,10 @@ export function AccountDetailPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button variant="outline">매핑 추가</Button>
+                  <Button variant="outline" disabled={!selected || !available.some((acl) => acl.name === selected)} onClick={() => {
+                    if (selected) changeNames([...names, selected])
+                    setSelected(null)
+                  }}>매핑 추가</Button>
                 </div>
               </TabsContent>
 
@@ -202,45 +234,11 @@ export function AccountDetailPage() {
                 <p className="text-muted-foreground text-xs">
                   새 ACL 이름을 만들고 필요한 IP · 포트를 직접 삽입합니다.
                 </p>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="acl-name">ACL 이름</Label>
-                    <Input id="acl-name" placeholder="ACL_NEW_ACCESS" className="font-mono" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="acl-desc">설명</Label>
-                    <Input id="acl-desc" placeholder="용도를 입력하세요" />
-                  </div>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-[2fr_1fr_1fr_auto]">
-                  <div className="space-y-2">
-                    <Label htmlFor="acl-dest">목적지 IP / 대역</Label>
-                    <Input id="acl-dest" placeholder="10.20.30.0/24" className="font-mono" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="acl-port">포트</Label>
-                    <Input id="acl-port" placeholder="443" className="font-mono" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="acl-proto">프로토콜</Label>
-                    <Select defaultValue="TCP">
-                      <SelectTrigger id="acl-proto">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="TCP">TCP</SelectItem>
-                        <SelectItem value="UDP">UDP</SelectItem>
-                        <SelectItem value="ICMP">ICMP</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-end">
-                    <Button variant="outline">
-                      <Plus className="size-4" />
-                      항목 추가
-                    </Button>
-                  </div>
-                </div>
+                <AclForm existing={allAcls} onSubmit={(acl) => {
+                  setCreated((prev) => [...prev, acl])
+                  changeNames([...names, acl.name])
+                  return undefined
+                }} />
               </TabsContent>
             </Tabs>
           </CardContent>

@@ -42,14 +42,17 @@ export function AdminFormDialog({
   admin,
   trigger,
   onSubmit,
+  existingAccounts,
 }: {
   mode: Mode
   admin?: AdminUser
   trigger: ReactElement
-  onSubmit: (admin: AdminUser) => void
+  onSubmit: (admin: AdminUser) => string | undefined
+  existingAccounts: AdminUser[]
 }) {
   const isEdit = mode === 'edit'
   const [open, setOpen] = useState(false)
+  const [error, setError] = useState<string>()
 
   const initial = {
     account: admin?.account ?? '',
@@ -68,8 +71,9 @@ export function AdminFormDialog({
   const passwordOk = longEnough && passed.length >= 3
   const confirmOk = form.confirm.length > 0 && form.password === form.confirm
   const passwordSectionOk = !form.resetPassword || (passwordOk && confirmOk)
+  const duplicate = existingAccounts.some((item) => item.id !== admin?.id && item.account.toLowerCase() === form.account.trim().toLowerCase())
   const canSubmit =
-    form.account.trim() !== '' && form.name.trim() !== '' && passwordSectionOk
+    form.account.trim() !== '' && form.name.trim() !== '' && passwordSectionOk && !duplicate
 
   function set<K extends keyof typeof initial>(key: K, value: (typeof initial)[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -77,8 +81,8 @@ export function AdminFormDialog({
 
   function submit() {
     if (!canSubmit) return
-    onSubmit({
-      id: admin?.id ?? `M${Date.now()}`,
+    const failure = onSubmit({
+      id: admin?.id ?? crypto.randomUUID(),
       account: form.account.trim(),
       name: form.name.trim(),
       role: form.role,
@@ -88,7 +92,8 @@ export function AdminFormDialog({
       lastLoginAt: admin?.lastLoginAt ?? '-',
       mfa: form.mfa,
     })
-    setOpen(false)
+    setError(failure)
+    if (!failure) setOpen(false)
   }
 
   return (
@@ -96,7 +101,7 @@ export function AdminFormDialog({
       open={open}
       onOpenChange={(next) => {
         setOpen(next)
-        if (next) setForm(initial)
+        if (next) { setForm(initial); setError(undefined) }
       }}
     >
       <DialogTrigger render={trigger} />
@@ -110,6 +115,7 @@ export function AdminFormDialog({
               : '새 관리자 계정을 등록합니다. 생성 내역은 감사 로그에 기록됩니다.'}
           </DialogDescription>
         </DialogHeader>
+        <p className="text-muted-foreground text-xs">목업의 비밀번호 입력은 정책 확인용입니다. 비밀번호를 저장하거나 로그인 인증에 사용하지 않습니다.</p>
 
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -126,6 +132,7 @@ export function AdminFormDialog({
               {isEdit ? (
                 <p className="text-muted-foreground text-xs">계정은 변경할 수 없습니다.</p>
               ) : null}
+              {duplicate ? <p role="alert" className="text-destructive text-xs">이미 등록된 관리자 계정입니다.</p> : null}
             </div>
             <div className="space-y-2">
               <Label htmlFor="admin-name">이름</Label>
@@ -249,6 +256,7 @@ export function AdminFormDialog({
           ) : null}
         </div>
 
+        {error ? <p role="alert" className="text-destructive text-sm">{error}</p> : null}
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>취소</DialogClose>
           <Button disabled={!canSubmit} onClick={submit}>

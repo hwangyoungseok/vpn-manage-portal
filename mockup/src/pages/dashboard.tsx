@@ -22,11 +22,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { accounts, companySummary, requests, retentionPolicy } from '@/data/mock'
+import { companySummary, requests, retentionPolicy } from '@/data/mock'
+import { useMockStore } from '@/data/use-mock-store'
 import { daysUntil, maskName } from '@/lib/format'
 
 // P0-5 대시보드.
 export function DashboardPage() {
+  const { accounts } = useMockStore()
   const total = companySummary.reduce((sum, c) => sum + c.total, 0)
   const expiring = accounts.filter((a) => a.status === '만료임박')
   const locked = accounts.filter((a) => a.status === '잠김')

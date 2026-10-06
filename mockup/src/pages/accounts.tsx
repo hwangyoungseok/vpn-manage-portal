@@ -23,11 +23,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { accounts, companies } from '@/data/mock'
+import { companies } from '@/data/mock'
+import { useMockStore } from '@/data/use-mock-store'
 import { excludedFromExport, maskName } from '@/lib/format'
 
 // P0-7 계정 · 정책 목록 (요구사항 §3). P0-15 마스킹 규칙 적용.
 export function AccountsPage() {
+  const { accounts } = useMockStore()
   const [keyword, setKeyword] = useState('')
   const [company, setCompany] = useState('all')
   const [userType, setUserType] = useState('all')

@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
+import { useMockStore } from '@/data/use-mock-store'
 
 type NavItem = {
   to: string
@@ -67,6 +68,7 @@ function useTheme() {
 }
 
 export function AppShell() {
+  const { error, reset } = useMockStore()
   const { dark, toggle } = useTheme()
   const [open, setOpen] = useState(false)
   const location = useLocation()
@@ -137,8 +139,13 @@ export function AppShell() {
                 목업
               </Badge>
               <p className="text-muted-foreground">
-                더미 데이터로 동작하는 화면 목업입니다. 저장·연동은 수행되지 않습니다.
+                관리자 · ACL · 계정 정책은 이 브라우저에 저장됩니다. VPN·AD 연동은 없습니다.
               </p>
+              <Button variant="ghost" size="sm" className="mt-2 w-full" onClick={() => {
+                if (window.confirm('추가·수정한 관리자, ACL, 계정 정책, 감사 로그를 기본 목업 데이터로 초기화하시겠습니까?')) {
+                  if (!reset()) window.location.reload()
+                }
+              }}>목업 데이터 초기화</Button>
             </div>
           </div>
         </aside>
@@ -188,6 +195,7 @@ export function AppShell() {
             </Button>
           </header>
           <main className="min-w-0 flex-1 p-4 lg:p-6">
+            {error ? <p role="alert" className="text-destructive mb-4 rounded-md border p-3 text-sm">{error}</p> : null}
             <Outlet />
           </main>
         </div>

@@ -21,17 +21,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { admins as seedAdmins } from '@/data/mock'
-import type { AdminUser } from '@/data/mock'
+import { useMockStore } from '@/data/use-mock-store'
 
 // P0-12 관리자 계정 관리 (요구사항 §9).
 // 역할별 권한 정의는 /permissions에 있다.
 export function AdminsPage() {
-  const [list, setList] = useState<AdminUser[]>(seedAdmins)
-
-  function update(next: AdminUser) {
-    setList((prev) => prev.map((m) => (m.id === next.id ? next : m)))
-  }
+  const { admins: list, saveAdmin, deleteAdmin } = useMockStore()
+  const [error, setError] = useState<string>()
 
   return (
     <>
@@ -41,6 +37,7 @@ export function AdminsPage() {
         description="관리자 계정을 등록하고 역할을 부여합니다. 역할별 권한 정의는 권한 화면에서 확인합니다."
       />
 
+      {error ? <p role="alert" className="text-destructive mb-4 text-sm">{error}</p> : null}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">관리자 계정</CardTitle>
@@ -56,7 +53,8 @@ export function AdminsPage() {
                   관리자 추가
                 </Button>
               }
-              onSubmit={(admin) => setList((prev) => [...prev, admin])}
+              existingAccounts={list}
+              onSubmit={saveAdmin}
             />
           </CardAction>
         </CardHeader>
@@ -132,7 +130,7 @@ export function AdminsPage() {
                             variant="outline"
                             size="sm"
                             onClick={() =>
-                              update({ ...m, locked: false, failCount: 0 })
+                              setError(saveAdmin({ ...m, locked: false, failCount: 0 }))
                             }
                           >
                             잠김 해제
@@ -146,8 +144,12 @@ export function AdminsPage() {
                               수정
                             </Button>
                           }
-                          onSubmit={update}
+                          existingAccounts={list}
+                          onSubmit={saveAdmin}
                         />
+                        <Button variant="ghost" size="sm" className="text-destructive" onClick={() => {
+                          if (window.confirm(`${m.account} 관리자를 삭제하시겠습니까?`)) setError(deleteAdmin(m.id))
+                        }}>삭제</Button>
                       </div>
                     </TableCell>
                   </TableRow>

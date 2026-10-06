@@ -22,15 +22,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { auditLogs } from '@/data/mock'
+import { useMockStore } from '@/data/use-mock-store'
 
 // P0-13 감사 로그 (요구사항 §11).
 export function AuditLogsPage() {
+  const { auditLogs } = useMockStore()
   const [keyword, setKeyword] = useState('')
   const [action, setAction] = useState('all')
   const [role, setRole] = useState('all')
 
-  const actions = useMemo(() => [...new Set(auditLogs.map((l) => l.action))], [])
+  const actions = useMemo(() => [...new Set(auditLogs.map((l) => l.action))], [auditLogs])
 
   const rows = auditLogs.filter((l) => {
     const hitKeyword =

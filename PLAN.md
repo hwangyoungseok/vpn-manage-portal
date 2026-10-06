@@ -1,21 +1,10 @@
 # RemoteHub 작업 계획
-
-> 상태: `pending` / `in-progress` / `done` / `blocked`
-> 태스크 ID(P0-1 등)로 의존 관계를 표기한다. 비고란에는 브랜치명 또는 블로커 이유를 기록한다.
-> 갱신: `/next`(선택) · `/done`(완료) · `/blocked`(블로커) · `/implement-task`(풀 워크플로우)
-
-## 현재 위치
-
-- **진행 Phase**: Phase 0 — VPN 서비스 목업 웹사이트
-- **목표**: DB·외부 연동 없이 화면 흐름과 정보 구조를 먼저 확정하고, 이해관계자 리뷰를 받는다. 화면 15개 구현 완료, P0-16 리뷰 대기.
-- **원칙**: Phase 0 목업(`mockup/`)은 React + shadcn/ui로 그린 **디자인 프로토타입**이며 더미 데이터만 쓴다. 제품 구현 스택은 ASP.NET Core MVC + Razor로 확정되어 있다.
-
 ---
 
 ## Phase 0: VPN 서비스 목업 웹사이트
 
 `mockup/`에 Vite + React + TypeScript + Tailwind v4 + shadcn/ui로 클릭 가능한 목업을 만든다.
-데이터는 `src/data/mock.ts`의 인메모리 더미 제공자에서 공급하고, 백엔드·DB·외부 연동은 붙이지 않는다.
+데이터는 `src/data/mock.ts`의 더미 데이터로 시작하며, 관리자·ACL·계정 정책·감사 로그 변경은 브라우저 `localStorage`에 저장한다. 백엔드·DB·외부 연동은 붙이지 않는다.
 이 목업은 **화면을 그려 합의하기 위한 프로토타입**이다. 제품 코드로 이어가지 않으며, 본 구현은 Phase 1 이후 ASP.NET Core MVC + Razor View로 별도 진행한다. React는 `mockup/` 밖으로 나가지 않는다.
 
 | 태스크 | 담당 | 상태 | 의존 | 비고 |
@@ -37,12 +26,17 @@
 | P0-15 이름 마스킹·개인정보 비표시 규칙 반영 | frontend-dev | done | P0-7 | 요구사항 §10, `lib/format.ts` |
 | P0-16 목업 전체 흐름 점검 및 이해관계자 리뷰 피드백 정리 | planner | pending | P0-1~P0-15 | 리뷰 결과를 요구사항에 반영 |
 | P0-17 리뷰 지적사항 반영 | frontend-dev | pending | P0-16 | 리뷰 후 범위 확정 |
+| P0-18 관리자·ACL 관리 및 계정 정책을 localStorage로 동작시킴 | frontend-dev | done | P0-8, P0-9, P0-12, P0-13 | 브라우저 영속화, 감사 로그, 초기화, 입력 검증·브라우저 흐름 검증 완료 |
+| P0-19 HTML·JS·CSS 분리 배포 및 HTML 직접 열기 지원 | frontend-dev | done | P0-18 | `dist/index.html` · `index.js` · `index.css`, 해시 라우팅, 파일 직접 열기·저장 검증 완료 |
 
 ### 목업 실행
 
 ```
 cd mockup && npm install && npm run dev   # http://localhost:5173
 ```
+
+파일 배포: `cd mockup && npm run build` 후 `dist/index.html` · `index.js` · `index.css`를
+같은 폴더에 전달한다. `index.html` 직접 열기 지원, 화면 주소는 `#/admins` 등 해시 라우팅이다.
 
 검증: `npx tsc -b` 통과, `npm run build` 통과, 전 화면 렌더 확인(라이트/다크).
 차트 범주 색은 `src/index.css`의 `--chart-1..4`이며 dataviz 검증 스크립트를 두 모드 모두 통과했다.

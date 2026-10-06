@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { Plus } from 'lucide-react'
+import { AclFormDialog } from '@/components/acl-form'
 
 import { PageHeader } from '@/components/layout/page-header'
 import { Badge } from '@/components/ui/badge'
@@ -23,10 +25,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { acls, companies } from '@/data/mock'
+import { companies } from '@/data/mock'
+import { useMockStore } from '@/data/use-mock-store'
 
 // P0-9 그룹사 관리 (요구사항 §4).
 export function CompaniesPage() {
+  const { acls, accounts, saveAcl, deleteAcl } = useMockStore()
+  const [error, setError] = useState<string>()
   return (
     <>
       <PageHeader
@@ -126,6 +131,7 @@ export function CompaniesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
+            {error ? <p role="alert" className="text-destructive text-sm">{error}</p> : null}
             {acls
               .filter((a) => a.shared)
               .map((acl) => (
@@ -133,14 +139,20 @@ export function CompaniesPage() {
                   <div className="font-mono text-xs font-medium">{acl.name}</div>
                   <p className="text-muted-foreground mt-1 text-xs">{acl.description}</p>
                   <p className="text-muted-foreground mt-1 text-xs tabular-nums">
-                    항목 {acl.entries.length}개
+                    항목 {acl.entries.length}개 · 적용 계정 {accounts.filter((account) => account.acls.includes(acl.name)).length}개
                   </p>
+                  <div className="mt-2 flex gap-1">
+                    <AclFormDialog acl={acl} existing={acls} onSubmit={saveAcl} trigger={<Button variant="ghost" size="sm">수정</Button>} />
+                    <Button variant="ghost" size="sm" className="text-destructive" onClick={() => {
+                      if (window.confirm(`${acl.name} ACL을 삭제하시겠습니까?`)) setError(deleteAcl(acl.id))
+                    }}>삭제</Button>
+                  </div>
                 </div>
               ))}
-            <Button variant="outline" size="sm" className="w-full">
+            <AclFormDialog shared existing={acls} onSubmit={saveAcl} trigger={<Button variant="outline" size="sm" className="w-full">
               <Plus className="size-4" />
               그룹 ACL 추가
-            </Button>
+            </Button>} />
           </CardContent>
         </Card>
       </div>

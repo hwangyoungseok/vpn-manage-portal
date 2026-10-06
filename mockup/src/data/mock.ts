@@ -1,5 +1,5 @@
 // P0-3 목업 더미 데이터 제공자.
-// 실제 연동/영속화는 Phase 2 이후에 붙인다. 이 파일은 그때 제거 대상이다.
+// 목업 변경은 mock-store.tsx에서 브라우저에 저장한다. 제품의 서버 연동/영속화는 Phase 2 이후에 별도 구현한다.
 
 export type UserType = '정직원' | '협력사' | '생산협력사' | 'VIP'
 export type AccountStatus = '사용중' | '만료임박' | '만료' | '잠김'
