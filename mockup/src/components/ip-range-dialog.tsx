@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { Plus } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -33,28 +33,38 @@ function hostCount(cidr: string): number | null {
   const octets = m.slice(1, 5).map(Number)
   const prefix = Number(m[5])
   if (octets.some((o) => o > 255) || prefix < 8 || prefix > 30) return null
+  const address = octets.reduce((value, octet) => value * 256 + octet, 0)
+  if (address % 2 ** (32 - prefix) !== 0) return null
   return 2 ** (32 - prefix) - 2
 }
 
 const emptyForm = { company: '', cidr: '', purpose: '' }
 
-export function IpRangeDialog({ onCreate }: { onCreate: (range: IpRange) => void }) {
+export function IpRangeDialog({ range, ranges, onSave }: {
+  range?: IpRange
+  ranges: IpRange[]
+  onSave: (range: IpRange) => void
+}) {
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState(emptyForm)
+  const id = useId()
+  const inUse = (range?.assigned ?? 0) > 0
 
-  const total = hostCount(form.cidr)
+  const cidr = form.cidr.trim()
+  const total = hostCount(cidr)
   const cidrTouched = form.cidr.length > 0
   const cidrOk = total !== null
-  const canSubmit = form.company !== '' && cidrOk && form.purpose.trim() !== ''
+  const duplicate = ranges.some((item) => item.id !== range?.id && item.cidr === cidr)
+  const canSubmit = form.company !== '' && cidrOk && !duplicate && form.purpose.trim() !== ''
 
   function submit() {
     if (!canSubmit || total === null) return
-    onCreate({
-      id: `N${Date.now()}`,
-      company: form.company,
-      cidr: form.cidr.trim(),
-      total,
-      assigned: 0,
+    onSave({
+      id: range?.id ?? crypto.randomUUID(),
+      company: inUse ? range!.company : form.company,
+      cidr: inUse ? range!.cidr : cidr,
+      total: inUse ? range!.total : total,
+      assigned: range?.assigned ?? 0,
       purpose: form.purpose.trim(),
     })
     setOpen(false)
@@ -65,30 +75,33 @@ export function IpRangeDialog({ onCreate }: { onCreate: (range: IpRange) => void
       open={open}
       onOpenChange={(next) => {
         setOpen(next)
-        if (!next) setForm(emptyForm)
+        if (next) setForm(range ? { company: range.company, cidr: range.cidr, purpose: range.purpose } : emptyForm)
       }}
     >
-      <DialogTrigger render={<Button size="sm" />}>
-        <Plus className="size-4" />
-        대역 추가
+      <DialogTrigger render={<Button size="sm" variant={range ? 'ghost' : 'default'} />}>
+        {!range && <Plus className="size-4" />}
+        {range ? '수정' : '대역 추가'}
       </DialogTrigger>
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>IP 대역 추가</DialogTitle>
+          <DialogTitle>IP 대역 {range ? '수정' : '추가'}</DialogTitle>
           <DialogDescription>
-            그룹사에 새 IP 대역을 등록합니다. 등록한 대역 안에서 고정 IP를 할당할 수 있습니다.
+            {range
+              ? 'IP 대역 정보를 수정하고 저장합니다.'
+              : '그룹사에 새 IP 대역을 등록합니다. 등록한 대역 안에서 고정 IP를 할당할 수 있습니다.'}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="range-company">그룹사</Label>
+            <Label htmlFor={`${id}-company`}>그룹사</Label>
             <Select
               value={form.company}
+              disabled={inUse}
               onValueChange={(v) => setForm((p) => ({ ...p, company: v ?? '' }))}
             >
-              <SelectTrigger id="range-company" className="w-full">
+              <SelectTrigger id={`${id}-company`} className="w-full">
                 <SelectValue placeholder="선택" />
               </SelectTrigger>
               <SelectContent>
@@ -102,9 +115,10 @@ export function IpRangeDialog({ onCreate }: { onCreate: (range: IpRange) => void
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="range-cidr">대역 (CIDR)</Label>
+            <Label htmlFor={`${id}-cidr`}>대역 (CIDR)</Label>
             <Input
-              id="range-cidr"
+              id={`${id}-cidr`}
+              disabled={inUse}
               value={form.cidr}
               onChange={(e) => setForm((p) => ({ ...p, cidr: e.target.value }))}
               placeholder="10.105.0.0/24"
@@ -112,7 +126,7 @@ export function IpRangeDialog({ onCreate }: { onCreate: (range: IpRange) => void
             />
             {cidrTouched && !cidrOk ? (
               <p className="text-xs text-rose-600 dark:text-rose-400">
-                CIDR 표기가 올바르지 않습니다 (프리픽스 /8 ~ /30).
+                네트워크 시작 주소와 프리픽스 /8 ~ /30을 입력하세요 (예: 10.105.0.0/24).
               </p>
             ) : (
               <p className="text-muted-foreground text-xs">
@@ -121,12 +135,18 @@ export function IpRangeDialog({ onCreate }: { onCreate: (range: IpRange) => void
                   : '예: 10.105.0.0/24'}
               </p>
             )}
+            {duplicate && <p role="alert" className="text-destructive text-xs">이미 등록된 대역입니다.</p>}
+            {inUse && (
+              <p className="text-muted-foreground text-xs">
+                IP가 {range?.assigned.toLocaleString()}개 할당되어 그룹사와 대역은 변경할 수 없습니다. 용도는 수정할 수 있습니다.
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="range-purpose">용도</Label>
+            <Label htmlFor={`${id}-purpose`}>용도</Label>
             <Input
-              id="range-purpose"
+              id={`${id}-purpose`}
               value={form.purpose}
               onChange={(e) => setForm((p) => ({ ...p, purpose: e.target.value }))}
               placeholder="예: 신규 협력사"
@@ -137,7 +157,7 @@ export function IpRangeDialog({ onCreate }: { onCreate: (range: IpRange) => void
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>취소</DialogClose>
           <Button disabled={!canSubmit} onClick={submit}>
-            등록
+            {range ? '저장' : '등록'}
           </Button>
         </DialogFooter>
       </DialogContent>

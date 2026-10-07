@@ -29,6 +29,8 @@
 | P0-18 관리자·ACL 관리 및 계정 정책을 localStorage로 동작시킴 | frontend-dev | done | P0-8, P0-9, P0-12, P0-13 | 브라우저 영속화, 감사 로그, 초기화, 입력 검증·브라우저 흐름 검증 완료 |
 | P0-19 HTML·JS·CSS 분리 배포 및 HTML 직접 열기 지원 | frontend-dev | done | P0-18 | `dist/index.html` · `index.js` · `index.css`, 해시 라우팅, 파일 직접 열기·저장 검증 완료 |
 | P0-20 Legacy VPN 시연 확인 체크리스트 작성 | planner | done | - | `docs/04-legacy-vpn-review-checklist.md`, 2026-10-07 10:00 Teams 미팅 준비 |
+| P0-21 신청 목록에 요청 ACL 정보 표시 | frontend-dev | done | P0-6 | 요청 ACL·추가/삭제·접근 항목 표시 및 검색, 빌드·브라우저 검증 완료 |
+| P0-22 IP 대역 수정 버튼 연결 | frontend-dev | done | P0-10 | 추가·수정 공용화, 할당 대역 보호, 저장·취소·재열기·CIDR 검증 완료 |
 
 ### 목업 실행
 

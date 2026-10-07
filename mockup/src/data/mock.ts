@@ -56,6 +56,13 @@ export interface Account {
   sourceNo: string
 }
 
+// 현재 계정 정책과 구분하여 보관하는 신청 당시의 요청 내용.
+export interface RequestedAcl {
+  name: string
+  action: '추가' | '삭제'
+  entries: AclEntry[]
+}
+
 export interface VpnRequest {
   id: string
   kind: RequestKind
@@ -68,6 +75,7 @@ export interface VpnRequest {
   sourceNo: string
   requestedAt: string
   requestedBy: string
+  requestedAcls: RequestedAcl[]
 }
 
 export interface DeletedUser {
@@ -373,6 +381,13 @@ export const requests: VpnRequest[] = [
     sourceNo: 'GW-2026-10410',
     requestedAt: '2026-10-05 09:12',
     requestedBy: '임주은',
+    requestedAcls: [{
+      name: 'ACL_GROUP_DEV', action: '추가',
+      entries: [
+        { destination: '10.30.0.0/16', port: '22,443,8080', protocol: 'TCP' },
+        { destination: '10.30.5.0/24', port: '3389', protocol: 'TCP' },
+      ],
+    }],
   },
   {
     id: 'R2026-1040',
@@ -386,6 +401,10 @@ export const requests: VpnRequest[] = [
     sourceNo: 'PP-2026-04120',
     requestedAt: '2026-10-05 08:47',
     requestedBy: '한성테크 관리자',
+    requestedAcls: [{
+      name: 'ACL_HST_MAINT', action: '추가',
+      entries: [{ destination: '10.20.30.42', port: '443', protocol: 'TCP' }],
+    }],
   },
   {
     id: 'R2026-1039',
@@ -399,6 +418,7 @@ export const requests: VpnRequest[] = [
     sourceNo: 'EAI-2026-55120',
     requestedAt: '2026-10-04 17:30',
     requestedBy: 'EAI 자동연계',
+    requestedAcls: [],
   },
   {
     id: 'R2026-1038',
@@ -412,6 +432,7 @@ export const requests: VpnRequest[] = [
     sourceNo: 'PP-2026-04098',
     requestedAt: '2026-10-04 11:05',
     requestedBy: '대명정보 관리자',
+    requestedAcls: [],
   },
   {
     id: 'R2026-1037',
@@ -425,6 +446,7 @@ export const requests: VpnRequest[] = [
     sourceNo: 'GW-2026-10340',
     requestedAt: '2026-10-03 14:22',
     requestedBy: '박지영',
+    requestedAcls: [],
   },
   {
     id: 'R2026-1036',
@@ -438,6 +460,22 @@ export const requests: VpnRequest[] = [
     sourceNo: 'PP-2026-04055',
     requestedAt: '2026-10-02 10:18',
     requestedBy: '대명정보 관리자',
+    requestedAcls: [
+      {
+        name: 'ACL_HST_MAINT', action: '삭제',
+        entries: [
+          { destination: '10.20.30.40', port: '3389', protocol: 'TCP' },
+          { destination: '10.20.30.41', port: '22', protocol: 'TCP' },
+        ],
+      },
+      {
+        name: 'ACL_ERP_READONLY', action: '추가',
+        entries: [
+          { destination: '10.20.10.0/24', port: '443', protocol: 'TCP' },
+          { destination: '10.20.10.15', port: '1521', protocol: 'TCP' },
+        ],
+      },
+    ],
   },
   {
     id: 'R2026-1035',
@@ -451,6 +489,13 @@ export const requests: VpnRequest[] = [
     sourceNo: 'PP-2026-03008',
     requestedAt: '2026-10-01 09:40',
     requestedBy: '파트너스 관리자',
+    requestedAcls: [{
+      name: 'ACL_ERP_READONLY', action: '추가',
+      entries: [
+        { destination: '10.20.10.0/24', port: '443', protocol: 'TCP' },
+        { destination: '10.20.10.15', port: '1521', protocol: 'TCP' },
+      ],
+    }],
   },
 ]
 

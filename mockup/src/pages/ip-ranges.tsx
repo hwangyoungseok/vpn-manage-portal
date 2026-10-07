@@ -31,6 +31,12 @@ export function IpRangesPage() {
   const [ranges, setRanges] = useState<IpRange[]>(seedRanges)
   const [statics, setStatics] = useState<StaticIp[]>(seedStaticIps)
 
+  function saveRange(range: IpRange) {
+    setRanges((prev) => prev.some((item) => item.id === range.id)
+      ? prev.map((item) => item.id === range.id ? range : item)
+      : [...prev, range])
+  }
+
   function assign(ip: StaticIp, rangeId: string) {
     setStatics((prev) => [...prev, ip])
     // 할당한 대역의 사용 수만 올린다 (같은 그룹사의 다른 대역은 건드리지 않는다).
@@ -59,7 +65,7 @@ export function IpRangesPage() {
               <CardTitle className="text-base">그룹사별 IP 대역</CardTitle>
               <CardDescription>{ranges.length}개 대역</CardDescription>
               <CardAction>
-                <IpRangeDialog onCreate={(r) => setRanges((prev) => [...prev, r])} />
+                <IpRangeDialog ranges={ranges} onSave={saveRange} />
               </CardAction>
             </CardHeader>
             <CardContent className="px-0">
@@ -97,9 +103,7 @@ export function IpRangesPage() {
                             {r.assigned.toLocaleString()} / {r.total.toLocaleString()}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button variant="ghost" size="sm">
-                              수정
-                            </Button>
+                            <IpRangeDialog range={r} ranges={ranges} onSave={saveRange} />
                           </TableCell>
                         </TableRow>
                       )

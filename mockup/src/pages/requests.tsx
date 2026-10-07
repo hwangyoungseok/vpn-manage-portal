@@ -39,7 +39,11 @@ export function RequestsPage() {
   const rows = requests.filter((r) => {
     const hitKeyword =
       keyword === '' ||
-      [r.account, r.name, r.company, r.sourceNo].some((v) =>
+      [r.account, r.name, r.company, r.sourceNo,
+        ...r.requestedAcls.flatMap((acl) => [acl.name,
+          ...acl.entries.flatMap((entry) => [entry.destination, entry.port, entry.protocol]),
+        ]),
+      ].some((v) =>
         v.toLowerCase().includes(keyword.toLowerCase()),
       )
     const hitStatus = status === 'all' || r.status === status
@@ -74,7 +78,8 @@ export function RequestsPage() {
               <Input
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                placeholder="계정 · 이름 · 그룹사 · 근거번호"
+                placeholder="계정 · 이름 · 그룹사 · 근거번호 · ACL · IP · 포트"
+                aria-label="신청 검색"
                 className="pl-8"
               />
             </div>
@@ -106,6 +111,7 @@ export function RequestsPage() {
           </div>
           <CardDescription>
             {rows.length}건 표시 · 엑셀 업로드 시 근거 시스템과 근거 번호가 필수입니다.
+            <span className="mt-1 block">요청 ACL은 신청 당시의 추가·삭제 대상입니다. IP · 포트를 펼쳐 접근 항목을 확인하세요.</span>
           </CardDescription>
         </CardHeader>
         <CardContent className="px-0">
@@ -126,6 +132,7 @@ export function RequestsPage() {
                   <TableHead>이름</TableHead>
                   <TableHead>그룹사</TableHead>
                   <TableHead>사용자 구분</TableHead>
+                  <TableHead>요청 ACL</TableHead>
                   <TableHead>근거 시스템 / 번호</TableHead>
                   <TableHead>신청일시</TableHead>
                   <TableHead>상태</TableHead>
@@ -157,6 +164,38 @@ export function RequestsPage() {
                     <TableCell className="text-muted-foreground">{r.company}</TableCell>
                     <TableCell>
                       <UserTypeBadge userType={r.userType} />
+                    </TableCell>
+                    <TableCell className="min-w-[260px] whitespace-normal">
+                      {r.requestedAcls.length === 0 ? (
+                        <span className="text-muted-foreground text-xs">
+                          {r.kind === '삭제' ? '계정 삭제 시 전체 해제' : 'ACL 변경 없음'}
+                        </span>
+                      ) : (
+                        <div className="space-y-3">
+                          {r.requestedAcls.map((acl, index) => (
+                            <div key={`${acl.name}-${acl.action}-${index}`} className="space-y-1">
+                              <div className="flex items-center gap-1.5">
+                                <Badge variant={acl.action === '삭제' ? 'destructive' : 'secondary'} className="text-[10px]">
+                                  {acl.action}
+                                </Badge>
+                                <span className="font-mono text-xs">{acl.name}</span>
+                              </div>
+                              <details className="text-xs">
+                                <summary className="text-muted-foreground cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-ring">
+                                  IP · 포트 {acl.entries.length}개
+                                </summary>
+                                <ul className="mt-1 space-y-1 font-mono">
+                                  {acl.entries.map((entry, entryIndex) => (
+                                    <li key={entryIndex}>
+                                      {entry.destination} · {entry.port} / {entry.protocol}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </details>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
                       {r.sourceSystem}
