@@ -31,6 +31,8 @@
 | P0-20 Legacy VPN 시연 확인 체크리스트 작성 | planner | done | - | `docs/04-legacy-vpn-review-checklist.md`, 2026-10-07 10:00 Teams 미팅 준비 |
 | P0-21 신청 목록에 요청 ACL 정보 표시 | frontend-dev | done | P0-6 | 요청 ACL·추가/삭제·접근 항목 표시 및 검색, 빌드·브라우저 검증 완료 |
 | P0-22 IP 대역 수정 버튼 연결 | frontend-dev | done | P0-10 | 추가·수정 공용화, 할당 대역 보호, 저장·취소·재열기·CIDR 검증 완료 |
+| P0-23 사이드바 메뉴를 업무별 네 카테고리로 그룹화 | frontend-dev | done | P0-2 | 신청관리·사용자 관리·현황/보고·시스템관리, 항상 펼침, 모바일 스크롤 확인 |
+| P0-24 사이드바 카테고리 접기·펼치기 | frontend-dev | done | P0-23 | 기본 펼침, 독립 토글·화살표, 키보드·모바일 검증 완료 |
 
 ### 목업 실행
 
