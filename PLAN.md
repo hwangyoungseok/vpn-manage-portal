@@ -25,14 +25,18 @@
 | P0-14 월간 리포팅 화면 (회사별 현황·변경 관리 현황·추이 차트) | frontend-dev | done | P0-2, P0-3 | 요구사항 §12 |
 | P0-15 이름 마스킹·개인정보 비표시 규칙 반영 | frontend-dev | done | P0-7 | 요구사항 §10, `lib/format.ts` |
 | P0-16 목업 전체 흐름 점검 및 이해관계자 리뷰 피드백 정리 | planner | pending | P0-1~P0-15 | 리뷰 결과를 요구사항에 반영 |
-| P0-17 리뷰 지적사항 반영 | frontend-dev | pending | P0-16 | 리뷰 후 범위 확정 |
+| P0-17 리뷰 지적사항 반영 | frontend-dev | pending | P0-16 | 목업 수정 범위는 P0-16 피드백으로 결정. 제품 구현 범위는 별도 협의·현행 검증 필요 |
 | P0-18 관리자·ACL 관리 및 계정 정책을 localStorage로 동작시킴 | frontend-dev | done | P0-8, P0-9, P0-12, P0-13 | 브라우저 영속화, 감사 로그, 초기화, 입력 검증·브라우저 흐름 검증 완료 |
 | P0-19 HTML·JS·CSS 분리 배포 및 HTML 직접 열기 지원 | frontend-dev | done | P0-18 | `dist/index.html` · `index.js` · `index.css`, 해시 라우팅, 파일 직접 열기·저장 검증 완료 |
-| P0-20 Legacy VPN 시연 확인 체크리스트 작성 | planner | done | - | `docs/04-legacy-vpn-review-checklist.md`, 2026-10-07 10:00 Teams 미팅 준비 |
+| P0-20 Legacy VPN 시연 확인 체크리스트 작성 | planner | done | - | 당시 미팅 준비 자료. 이후 P0-23의 범위·WBS·공수 산정 회의 정리로 대체 |
 | P0-21 신청 목록에 요청 ACL 정보 표시 | frontend-dev | done | P0-6 | 요청 ACL·추가/삭제·접근 항목 표시 및 검색, 빌드·브라우저 검증 완료 |
 | P0-22 IP 대역 수정 버튼 연결 | frontend-dev | done | P0-10 | 추가·수정 공용화, 할당 대역 보호, 저장·취소·재열기·CIDR 검증 완료 |
+<<<<<<< HEAD
 | P0-23 사이드바 메뉴를 업무별 네 카테고리로 그룹화 | frontend-dev | done | P0-2 | 신청관리·사용자 관리·현황/보고·시스템관리, 항상 펼침, 모바일 스크롤 확인 |
 | P0-24 사이드바 카테고리 접기·펼치기 | frontend-dev | done | P0-23 | 기본 펼침, 독립 토글·화살표, 키보드·모바일 검증 완료 |
+=======
+| P0-23 Legacy VPN 회의를 범위·WBS·공수 산정 자료로 재정리 | planner | done | P0-20 | [`docs/legacy-vpn-review.md`](docs/legacy-vpn-review.md). 실제 시스템·데이터 검증은 수주 후, 범위·공수는 미확정 |
+>>>>>>> cd327c08d64819b61a92c49aa5c47bdc742920ee
 
 ### 목업 실행
 
@@ -48,7 +52,7 @@ cd mockup && npm install && npm run dev   # http://localhost:5173
 
 ## Phase 1: 기반 설계 및 문서 정비
 
-목업 리뷰로 범위가 확정된 뒤, 구현 전에 아키텍처와 결정 이력을 문서로 고정한다.
+목업 리뷰와 범위·WBS·공수 협의를 거치고, 수주 후 현행 시스템·데이터를 검증해 구현 범위를 확정한다. 구현 전에 아키텍처와 결정 이력을 문서로 고정한다.
 
 | 태스크 | 담당 | 상태 | 의존 | 비고 |
 |--------|------|------|------|------|
