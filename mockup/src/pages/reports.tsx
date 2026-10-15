@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import { Download } from 'lucide-react'
 import {
   Bar,
@@ -11,6 +12,7 @@ import {
 } from 'recharts'
 
 import { PageHeader } from '@/components/layout/page-header'
+import { MonthPicker } from '@/components/month-picker'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -31,7 +33,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { changeLabels, changeSummary, companySummary, monthlyTrend } from '@/data/mock'
+import { changeLabels, monthlyReport, reportLatest } from '@/data/mock'
 import { formatDiff } from '@/lib/format'
 
 // P0-14 월간 리포팅 (요구사항 §12).
@@ -54,6 +56,14 @@ const totalConfig = {
 } satisfies ChartConfig
 
 export function ReportsPage() {
+  const [year, setYear] = useState(reportLatest.year)
+  const [month, setMonth] = useState(reportLatest.month)
+  const {
+    companySummary,
+    changeSummary,
+    trend: monthlyTrend,
+  } = useMemo(() => monthlyReport(year, month), [year, month])
+
   const totals = companySummary.reduce(
     (acc, c) => ({
       total: acc.total + c.total,
@@ -72,12 +82,22 @@ export function ReportsPage() {
       <PageHeader
         title="월간 리포팅"
         requirement="§12"
-        description="2026년 10월 기준 · 회사별 사용자 현황과 변경 관리 현황"
+        description={`${year}년 ${month}월 기준 · 회사별 사용자 현황과 변경 관리 현황`}
         actions={
-          <Button variant="outline" size="sm">
-            <Download className="size-4" />
-            엑셀 다운로드
-          </Button>
+          <>
+            <MonthPicker
+              year={year}
+              month={month}
+              onChange={(y, m) => {
+                setYear(y)
+                setMonth(m)
+              }}
+            />
+            <Button variant="outline" size="sm">
+              <Download className="size-4" />
+              엑셀 다운로드
+            </Button>
+          </>
         }
       />
 
@@ -255,7 +275,7 @@ export function ReportsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">전체 계정 추이</CardTitle>
-                <CardDescription>최근 6개월</CardDescription>
+                <CardDescription>선택 월까지 최근 6개월</CardDescription>
               </CardHeader>
               <CardContent>
                 <ChartContainer config={totalConfig} className="h-[220px] w-full">
@@ -268,7 +288,7 @@ export function ReportsPage() {
                       dataKey="total"
                       stroke="var(--color-total)"
                       strokeWidth={2}
-                      dot={{ r: 4, strokeWidth: 2, stroke: 'var(--card)' }}
+                      dot={{ r: 4, fill: 'var(--color-total)', strokeWidth: 2, stroke: 'var(--card)' }}
                       activeDot={{ r: 5 }}
                     >
                       {/* 모든 점에 숫자를 달면 축 눈금과 겹치고 읽기도 어렵다.

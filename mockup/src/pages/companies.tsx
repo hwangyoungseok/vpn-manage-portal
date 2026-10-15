@@ -1,6 +1,4 @@
-import { useState } from 'react'
 import { Plus } from 'lucide-react'
-import { AclFormDialog } from '@/components/acl-form'
 
 import { PageHeader } from '@/components/layout/page-header'
 import { Badge } from '@/components/ui/badge'
@@ -26,18 +24,15 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { companies } from '@/data/mock'
-import { useMockStore } from '@/data/use-mock-store'
 
 // P0-9 그룹사 관리 (요구사항 §4).
 export function CompaniesPage() {
-  const { acls, accounts, saveAcl, deleteAcl } = useMockStore()
-  const [error, setError] = useState<string>()
   return (
     <>
       <PageHeader
         title="그룹사 관리"
         requirement="§4"
-        description="사용 그룹사를 관리하고, 그룹사별 사용자 · 정책을 분리합니다."
+        description="사용 그룹사를 관리하고, 그룹사별 사용자 · 정책을 분리합니다. 공용 ACL은 그룹 ACL 관리에서 다룹니다."
         actions={
           <Dialog>
             <DialogTrigger render={<Button size="sm" />}>
@@ -70,8 +65,8 @@ export function CompaniesPage() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+      <div className="grid gap-4">
+        <Card>
           <CardHeader>
             <CardTitle className="text-base">그룹사 목록</CardTitle>
             <CardDescription>{companies.length}곳 등록</CardDescription>
@@ -120,39 +115,6 @@ export function CompaniesPage() {
                 </TableBody>
               </Table>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">그룹 ACL</CardTitle>
-            <CardDescription>
-              미리 정의한 ACL입니다. 이름이 신청 시스템과 연계됩니다.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {error ? <p role="alert" className="text-destructive text-sm">{error}</p> : null}
-            {acls
-              .filter((a) => a.shared)
-              .map((acl) => (
-                <div key={acl.id} className="rounded-md border p-3">
-                  <div className="font-mono text-xs font-medium">{acl.name}</div>
-                  <p className="text-muted-foreground mt-1 text-xs">{acl.description}</p>
-                  <p className="text-muted-foreground mt-1 text-xs tabular-nums">
-                    항목 {acl.entries.length}개 · 적용 계정 {accounts.filter((account) => account.acls.includes(acl.name)).length}개
-                  </p>
-                  <div className="mt-2 flex gap-1">
-                    <AclFormDialog acl={acl} existing={acls} onSubmit={saveAcl} trigger={<Button variant="ghost" size="sm">수정</Button>} />
-                    <Button variant="ghost" size="sm" className="text-destructive" onClick={() => {
-                      if (window.confirm(`${acl.name} ACL을 삭제하시겠습니까?`)) setError(deleteAcl(acl.id))
-                    }}>삭제</Button>
-                  </div>
-                </div>
-              ))}
-            <AclFormDialog shared existing={acls} onSubmit={saveAcl} trigger={<Button variant="outline" size="sm" className="w-full">
-              <Plus className="size-4" />
-              그룹 ACL 추가
-            </Button>} />
           </CardContent>
         </Card>
       </div>

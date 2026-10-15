@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { Download, Info, Search } from 'lucide-react'
 
+import { AccountDialog } from '@/components/account-dialog'
 import { PageHeader } from '@/components/layout/page-header'
 import { StatusBadge, UserTypeBadge } from '@/components/status-badge'
 import { Badge } from '@/components/ui/badge'
@@ -34,6 +34,8 @@ export function AccountsPage() {
   const [company, setCompany] = useState('all')
   const [userType, setUserType] = useState('all')
   const [status, setStatus] = useState('all')
+  const [openId, setOpenId] = useState<string | null>(null)
+  const openAccount = accounts.find((a) => a.id === openId) ?? null
 
   const rows = accounts.filter((a) => {
     const hitKeyword =
@@ -149,7 +151,7 @@ export function AccountsPage() {
               </TableHeader>
               <TableBody>
                 {rows.map((a) => (
-                  <TableRow key={a.id}>
+                  <TableRow key={a.id} className="cursor-pointer" onClick={() => setOpenId(a.id)}>
                     <TableCell className="font-mono text-xs">{a.account}</TableCell>
                     <TableCell>{maskName(a.name)}</TableCell>
                     <TableCell className="text-muted-foreground text-xs">
@@ -190,7 +192,10 @@ export function AccountsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        render={<Link to={`/accounts/${a.id}`} />}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setOpenId(a.id)
+                        }}
                       >
                         상세
                       </Button>
@@ -202,6 +207,8 @@ export function AccountsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <AccountDialog account={openAccount} onOpenChange={(open) => !open && setOpenId(null)} />
     </>
   )
 }

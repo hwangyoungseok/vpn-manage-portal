@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { Check, Search, X } from 'lucide-react'
 
 import { ExcelUploadDialog } from '@/components/excel-upload-dialog'
 import { PageHeader } from '@/components/layout/page-header'
 import { RequestStatusBadge, UserTypeBadge } from '@/components/status-badge'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -24,7 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { requests } from '@/data/mock'
+import { requestKinds, requests } from '@/data/mock'
 import { maskName } from '@/lib/format'
 
 // P0-6 신청 목록 (요구사항 §2).
@@ -32,26 +32,28 @@ export function RequestsPage() {
   const [keyword, setKeyword] = useState('')
   const [status, setStatus] = useState('all')
   const [system, setSystem] = useState('all')
+  const [kind, setKind] = useState('all')
+  const navigate = useNavigate()
   const [selected, setSelected] = useState<string[]>([])
 
   const systems = useMemo(() => [...new Set(requests.map((r) => r.sourceSystem))], [])
 
-  const rows = requests.filter((r) => {
-    const hitKeyword =
-      keyword === '' ||
-      [r.account, r.name, r.company, r.sourceNo,
-        ...r.requestedAcls.flatMap((acl) => [acl.name,
-          ...acl.entries.flatMap((entry) => [entry.destination, entry.port, entry.protocol]),
-        ]),
-      ].some((v) =>
-        v.toLowerCase().includes(keyword.toLowerCase()),
-      )
-    const hitStatus = status === 'all' || r.status === status
-    const hitSystem = system === 'all' || r.sourceSystem === system
-    return hitKeyword && hitStatus && hitSystem
-  })
+  // 한 신청 건에 여러 사용자가 있으므로 사용자 단위로 펼쳐서 보여준다.
+  const rows = requests
+    .flatMap((request) => request.items.map((item) => ({ request, item })))
+    .filter(({ request: r, item: i }) => {
+      const hitKeyword =
+        keyword === '' ||
+        [i.account, i.assignedIp, i.name, i.department, i.affiliation, r.company, r.sourceNo].some((v) =>
+          v.toLowerCase().includes(keyword.toLowerCase()),
+        )
+      const hitStatus = status === 'all' || r.status === status
+      const hitSystem = system === 'all' || r.sourceSystem === system
+      const hitKind = kind === 'all' || i.kind === kind
+      return hitKeyword && hitStatus && hitSystem && hitKind
+    })
 
-  const allChecked = rows.length > 0 && rows.every((r) => selected.includes(r.id))
+  const allChecked = rows.length > 0 && rows.every(({ item }) => selected.includes(item.id))
 
   return (
     <>
@@ -78,7 +80,7 @@ export function RequestsPage() {
               <Input
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                placeholder="계정 · 이름 · 그룹사 · 근거번호 · ACL · IP · 포트"
+                placeholder="VPN ID · VPN IP · 이름 · 부서 · 소속사 · 신청사 · 근거번호"
                 aria-label="신청 검색"
                 className="pl-8"
               />
@@ -93,6 +95,19 @@ export function RequestsPage() {
                 <SelectItem value="처리중">처리중</SelectItem>
                 <SelectItem value="완료">완료</SelectItem>
                 <SelectItem value="반려">반려</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={kind} onValueChange={(v) => setKind(v ?? 'all')}>
+              <SelectTrigger className="w-[130px]">
+                <SelectValue>{(v) => (v === 'all' ? '전체 구분' : String(v))}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체 구분</SelectItem>
+                {requestKinds.map((k) => (
+                  <SelectItem key={k} value={k}>
+                    {k}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select value={system} onValueChange={(v) => setSystem(v ?? "all")}>
@@ -111,7 +126,7 @@ export function RequestsPage() {
           </div>
           <CardDescription>
             {rows.length}건 표시 · 엑셀 업로드 시 근거 시스템과 근거 번호가 필수입니다.
-            <span className="mt-1 block">요청 ACL은 신청 당시의 추가·삭제 대상입니다. IP · 포트를 펼쳐 접근 항목을 확인하세요.</span>
+            <span className="mt-1 block">VPN IP는 신청 계정의 고정 IP입니다. 행을 누르면 같은 근거번호의 신청 상세에서 해당 사용자를 보여줍니다.</span>
           </CardDescription>
         </CardHeader>
         <CardContent className="px-0">
@@ -122,93 +137,77 @@ export function RequestsPage() {
                   <TableHead className="w-10">
                     <Checkbox
                       checked={allChecked}
-                      onCheckedChange={(v) => setSelected(v ? rows.map((r) => r.id) : [])}
+                      onCheckedChange={(v) => setSelected(v ? rows.map(({ item }) => item.id) : [])}
                       aria-label="전체 선택"
                     />
                   </TableHead>
-                  <TableHead>신청번호</TableHead>
-                  <TableHead>구분</TableHead>
-                  <TableHead>계정</TableHead>
-                  <TableHead>이름</TableHead>
-                  <TableHead>그룹사</TableHead>
-                  <TableHead>사용자 구분</TableHead>
-                  <TableHead>요청 ACL</TableHead>
-                  <TableHead>근거 시스템 / 번호</TableHead>
+                  <TableHead>신청사 / 구분</TableHead>
+                  <TableHead>이름 / 부서 / 소속사</TableHead>
+                  <TableHead>근거번호</TableHead>
+                  <TableHead>VPN ID</TableHead>
+                  <TableHead>VPN IP</TableHead>
                   <TableHead>신청일시</TableHead>
+                  <TableHead>만료일</TableHead>
                   <TableHead>상태</TableHead>
                   <TableHead className="text-right">처리</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.map((r) => (
-                  <TableRow key={r.id} data-state={selected.includes(r.id) ? 'selected' : undefined}>
-                    <TableCell>
+                {rows.map(({ request: r, item: i }) => (
+                  <TableRow
+                    key={i.id}
+                    data-state={selected.includes(i.id) ? 'selected' : undefined}
+                    className="cursor-pointer"
+                    onClick={() => navigate(`/requests/${r.id}?item=${i.id}`)}
+                  >
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                       <Checkbox
-                        checked={selected.includes(r.id)}
+                        checked={selected.includes(i.id)}
                         onCheckedChange={(v) =>
                           setSelected((prev) =>
-                            v ? [...prev, r.id] : prev.filter((id) => id !== r.id),
+                            v ? [...prev, i.id] : prev.filter((id) => id !== i.id),
                           )
                         }
-                        aria-label={`${r.id} 선택`}
+                        aria-label={`${i.account} 선택`}
                       />
                     </TableCell>
-                    <TableCell className="font-mono text-xs">{r.id}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="font-normal">
-                        {r.kind}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">{r.company}</span>
+                        <span aria-hidden="true" className="bg-border h-4 w-px shrink-0" />
+                        <UserTypeBadge userType={i.userType} />
+                      </div>
                     </TableCell>
-                    <TableCell className="font-mono text-xs">{r.account}</TableCell>
-                    <TableCell>{maskName(r.name)}</TableCell>
-                    <TableCell className="text-muted-foreground">{r.company}</TableCell>
                     <TableCell>
-                      <UserTypeBadge userType={r.userType} />
+                      <div className="flex items-center gap-2">
+                        <span>{maskName(i.name)}</span>
+                        <span aria-hidden="true" className="bg-border h-4 w-px shrink-0" />
+                        <span className="text-muted-foreground">{i.department}</span>
+                        <span aria-hidden="true" className="bg-border h-4 w-px shrink-0" />
+                        <span className="text-muted-foreground">{i.affiliation}</span>
+                      </div>
                     </TableCell>
-                    <TableCell className="min-w-[260px] whitespace-normal">
-                      {r.requestedAcls.length === 0 ? (
-                        <span className="text-muted-foreground text-xs">
-                          {r.kind === '삭제' ? '계정 삭제 시 전체 해제' : 'ACL 변경 없음'}
-                        </span>
-                      ) : (
-                        <div className="space-y-3">
-                          {r.requestedAcls.map((acl, index) => (
-                            <div key={`${acl.name}-${acl.action}-${index}`} className="space-y-1">
-                              <div className="flex items-center gap-1.5">
-                                <Badge variant={acl.action === '삭제' ? 'destructive' : 'secondary'} className="text-[10px]">
-                                  {acl.action}
-                                </Badge>
-                                <span className="font-mono text-xs">{acl.name}</span>
-                              </div>
-                              <details className="text-xs">
-                                <summary className="text-muted-foreground cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-ring">
-                                  IP · 포트 {acl.entries.length}개
-                                </summary>
-                                <ul className="mt-1 space-y-1 font-mono">
-                                  {acl.entries.map((entry, entryIndex) => (
-                                    <li key={entryIndex}>
-                                      {entry.destination} · {entry.port} / {entry.protocol}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </details>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                    <TableCell className="font-mono text-xs">
+                      <Link
+                        to={`/requests/${r.id}?item=${i.id}`}
+                        className="hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {r.sourceNo}
+                      </Link>
                     </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
-                      {r.sourceSystem}
-                      <br />
-                      <span className="font-mono">{r.sourceNo}</span>
-                    </TableCell>
+                    <TableCell className="font-mono text-xs">{i.account}</TableCell>
+                    <TableCell className="font-mono text-xs">{i.assignedIp}</TableCell>
                     <TableCell className="text-muted-foreground tabular-nums">
                       {r.requestedAt}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground tabular-nums">
+                      {i.expiresAt}
                     </TableCell>
                     <TableCell>
                       <RequestStatusBadge status={r.status} />
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       {r.status === '대기' ? (
                         <div className="flex justify-end gap-1">
                           <Button size="icon" variant="ghost" aria-label="승인">

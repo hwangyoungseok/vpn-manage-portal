@@ -22,7 +22,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { companySummary, requests, retentionPolicy } from '@/data/mock'
+import {
+  changeLabels,
+  changeSummary,
+  companySummary,
+  reportLatest,
+  requests,
+  retentionPolicy,
+} from '@/data/mock'
+import { kindCounts } from '@/lib/request'
 import { useMockStore } from '@/data/use-mock-store'
 import { daysUntil, maskName } from '@/lib/format'
 
@@ -33,6 +41,17 @@ export function DashboardPage() {
   const expiring = accounts.filter((a) => a.status === '만료임박')
   const locked = accounts.filter((a) => a.status === '잠김')
   const pending = requests.filter((r) => r.status === '대기' || r.status === '처리중')
+
+  const changeTotals = [
+    {
+      label: '합계',
+      value: changeSummary.reduce((acc, row) => acc + changeLabels.reduce((s, c) => s + row[c.key], 0), 0),
+    },
+    ...changeLabels.map((c) => ({
+      label: c.label,
+      value: changeSummary.reduce((acc, row) => acc + row[c.key], 0),
+    })),
+  ]
 
   const stats = [
     { label: '전체 계정', value: total, unit: '개', icon: Users, hint: '그룹사 5곳 합계' },
@@ -79,6 +98,31 @@ export function DashboardPage() {
           </Card>
         ))}
       </div>
+
+      {/* 이번 달 변경 건수 요약. 상세 추이는 사용자 변경관리 현황에서 본다. */}
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle className="text-base">이번 달 변경관리</CardTitle>
+          <CardDescription>
+            {reportLatest.year}년 {reportLatest.month}월 · 신청 시스템 {changeSummary.length}곳 합계
+          </CardDescription>
+          <CardAction>
+            <Button variant="ghost" size="sm" render={<Link to="/changes" />}>
+              변경관리 현황 <ArrowRight className="size-4" />
+            </Button>
+          </CardAction>
+        </CardHeader>
+        <CardContent>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4 xl:grid-cols-8">
+            {changeTotals.map((c) => (
+              <div key={c.label} className="min-w-0">
+                <dt className="text-muted-foreground truncate text-xs">{c.label}</dt>
+                <dd className="text-lg font-semibold tabular-nums">{c.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </CardContent>
+      </Card>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
@@ -168,11 +212,13 @@ export function DashboardPage() {
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="font-normal">
-                      {r.kind}
-                    </Badge>
+                    {kindCounts(r.items).map((k) => (
+                      <Badge key={k.kind} variant="secondary" className="font-normal">
+                        {k.kind} {k.count}
+                      </Badge>
+                    ))}
                     <span className="truncate text-sm">
-                      {maskName(r.name)} · {r.company}
+                      {r.company} · {r.items.length}명
                     </span>
                   </div>
                   <p className="text-muted-foreground mt-1 text-xs">

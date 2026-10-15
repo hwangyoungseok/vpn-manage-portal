@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { accounts, acls, admins, auditLogs } from './mock'
-import type { Account, Acl, AdminUser, AuditLog } from './mock'
+import { accountHistory, accountSnapshot, accounts, acls, admins, auditLogs } from './mock'
+import type { Account, AccountHistory, AccountHistoryKind, Acl, AdminUser, AuditLog } from './mock'
 import { validateAcl } from '@/lib/acl'
 import { MockStoreContext } from './use-mock-store'
 
-const STORAGE_KEY = 'remotehub.mock.v1'
-type Data = { admins: AdminUser[]; acls: Acl[]; accounts: Account[]; auditLogs: AuditLog[] }
+// v3: 계정 사용자정보 항목(v2)과 계정 관리이력 추가.
+const STORAGE_KEY = 'remotehub.mock.v3'
+type Data = { admins: AdminUser[]; acls: Acl[]; accounts: Account[]; auditLogs: AuditLog[]; accountHistory: AccountHistory[] }
 type Result = string | undefined
-const seeds: Data = { admins, acls, accounts, auditLogs }
+const seeds: Data = { admins, acls, accounts, auditLogs, accountHistory }
 
 // Validate persisted rows against the seed shape before any page consumes them.
 function hasShape(value: unknown, sample: unknown): boolean {
@@ -68,6 +69,12 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // 계정 처리 시점의 상태를 관리이력에 남긴다.
+  function withHistory(data: Data, account: Account, kind: AccountHistoryKind): Data {
+    const entry = accountSnapshot(account, { id: crypto.randomUUID(), kind, at: new Date().toLocaleString('sv-SE'), actor: '홍길동' })
+    return { ...data, accountHistory: [entry, ...data.accountHistory] }
+  }
+
   function saveAdmin(admin: AdminUser): Result {
     const prev = current.current
     const old = prev.admins.find((item) => item.id === admin.id)
@@ -119,10 +126,32 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
       nextAcls.push(acl)
     }
     if (names.some((name) => !nextAcls.some((acl) => acl.name === name))) return '변경된 ACL이 있습니다. 페이지를 새로고침하고 다시 선택하세요.'
-    return commit({ ...prev, acls: nextAcls, accounts: prev.accounts.map((item) => item.id === accountId ? { ...item, acls: [...new Set(names)] } : item) }, {
+    const updated = { ...account, acls: [...new Set(names)] }
+    return commit(withHistory({ ...prev, acls: nextAcls, accounts: prev.accounts.map((item) => item.id === accountId ? updated : item) }, updated, '정책변경'), {
       action: '정책 변경', target: account.account, detail: `ACL: ${account.acls.join(', ') || '없음'} → ${names.join(', ') || '없음'}${created.length ? ` (신규 ACL ${created.map((acl) => acl.name).join(', ')})` : ''}`,
     })
   }
 
-  return <MockStoreContext.Provider value={{ ...data, error, saveAdmin, deleteAdmin, saveAcl, deleteAcl, savePolicies, reset: () => commit(structuredClone(seeds)) }}>{children}</MockStoreContext.Provider>
+  function saveAccount(account: Account): Result {
+    const prev = current.current
+    const old = prev.accounts.find((item) => item.id === account.id)
+    if (!old) return '계정을 찾을 수 없습니다.'
+    if (!account.name.trim() || !account.affiliation.trim() || !account.department.trim()) return '필수 항목을 입력하세요.'
+    if (!account.expiresAt) return '만료일을 입력하세요.'
+    const changed = (Object.keys(account) as (keyof Account)[]).filter((key) => JSON.stringify(account[key]) !== JSON.stringify(old[key]))
+    if (changed.length === 0) return '변경된 항목이 없습니다.'
+    const kind = changed.length === 1 && changed[0] === 'expiresAt' ? '기간연장' : '수정'
+    return commit(withHistory({ ...prev, accounts: prev.accounts.map((item) => item.id === account.id ? account : item) }, account, kind), {
+      action: '사용자 정보 수정', target: account.account, detail: `변경 항목: ${changed.join(', ')}`,
+    })
+  }
+
+  function deleteAccount(id: string): Result {
+    const prev = current.current
+    const account = prev.accounts.find((item) => item.id === id)
+    if (!account) return '계정을 찾을 수 없습니다.'
+    return commit(withHistory({ ...prev, accounts: prev.accounts.filter((item) => item.id !== id) }, account, '삭제'), { action: '계정 삭제', target: account.account, detail: '사용자 관리에서 삭제' })
+  }
+
+  return <MockStoreContext.Provider value={{ ...data, error, saveAdmin, deleteAdmin, saveAcl, deleteAcl, savePolicies, saveAccount, deleteAccount, reset: () => commit(structuredClone(seeds)) }}>{children}</MockStoreContext.Provider>
 }

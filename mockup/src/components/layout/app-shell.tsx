@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import {
   Building2,
   ChevronDown,
   ClipboardList,
   FileBarChart,
+  GitCompareArrows,
   Globe2,
   KeyRound,
+  ListChecks,
   LayoutDashboard,
+  ListTree,
   LogOut,
   Menu,
   Moon,
@@ -43,7 +46,6 @@ const nav: { label: string; items: NavItem[] }[] = [
     label: '사용자 관리',
     items: [
       { to: '/accounts', label: '계정 · 정책', icon: Users, req: '§3' },
-      { to: '/ip-ranges', label: 'IP 대역 · 고정 IP', icon: Globe2, req: '§5 §6' },
       { to: '/deleted', label: '삭제 사용자', icon: Trash2, req: '§8' },
     ],
   },
@@ -52,13 +54,17 @@ const nav: { label: string; items: NavItem[] }[] = [
     items: [
       { to: '/', label: '대시보드', icon: LayoutDashboard, req: '' },
       { to: '/reports', label: '월간 리포팅', icon: FileBarChart, req: '§12' },
+      { to: '/changes', label: '사용자 변경관리 현황', icon: GitCompareArrows, req: '§12.2' },
     ],
   },
   {
     label: '시스템관리',
     items: [
-      { to: '/companies', label: '그룹사 관리', icon: Building2, req: '§4' },
       { to: '/admins', label: '관리자', icon: ShieldCheck, req: '§9' },
+      { to: '/codes', label: '코드관리', icon: ListTree, req: '' },
+      { to: '/companies', label: '그룹사 관리', icon: Building2, req: '§4' },
+      { to: '/group-acls', label: '그룹 ACL 관리', icon: ListChecks, req: '§1.2' },
+      { to: '/ip-ranges', label: '그룹 IP 관리', icon: Globe2, req: '§5 §6' },
       { to: '/permissions', label: '권한', icon: KeyRound, req: '§9' },
       { to: '/audit', label: '감사 로그', icon: ScrollText, req: '§11' },
     ],
@@ -100,15 +106,17 @@ export function AppShell() {
             open ? 'translate-x-0' : '-translate-x-full',
           )}
         >
-          <div className="flex h-16 shrink-0 items-center gap-2 px-5">
+          {/* 브랜드를 누르면 대시보드로 이동한다. */}
+          <Link
+            to="/"
+            aria-label="VPN 관리 시스템 대시보드로 이동"
+            className="flex h-16 shrink-0 items-center gap-2 px-5 outline-none hover:opacity-80 focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
             <div className="grid size-8 place-items-center rounded-md bg-primary text-primary-foreground">
               <ShieldCheck className="size-4" />
             </div>
-            <div className="leading-tight">
-              <div className="text-sm font-semibold">RemoteHub</div>
-              <div className="text-muted-foreground text-xs">VPN 관리</div>
-            </div>
-          </div>
+            <div className="text-sm font-semibold">VPN 관리 시스템</div>
+          </Link>
           <Separator />
           <nav aria-label="주 메뉴" className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3">
             {nav.map((section, i) => (
