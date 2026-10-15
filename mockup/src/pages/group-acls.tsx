@@ -29,6 +29,7 @@ export function GroupAclsPage() {
   const rows = groupAcls.filter(
     (acl) =>
       k === '' ||
+      (acl.company ?? '').toLowerCase().includes(k) ||
       acl.name.toLowerCase().includes(k) ||
       acl.description.toLowerCase().includes(k) ||
       acl.entries.some((e) => e.destination.includes(k) || e.port.includes(k)),
@@ -78,7 +79,7 @@ export function GroupAclsPage() {
             <Input
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              placeholder="ACL 이름 · 설명 · 목적지 IP · 포트"
+              placeholder="회사 · ACL 이름 · 설명 · 목적지 IP · 포트"
               aria-label="그룹 ACL 검색"
               className="pl-8"
             />
@@ -102,6 +103,7 @@ export function GroupAclsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>회사</TableHead>
                   <TableHead>ACL 이름</TableHead>
                   <TableHead>설명</TableHead>
                   <TableHead>목적지 · 포트 / 프로토콜</TableHead>
@@ -112,7 +114,7 @@ export function GroupAclsPage() {
               <TableBody>
                 {rows.length === 0 ? (
                   <TableRow className="hover:bg-transparent">
-                    <TableCell colSpan={5} className="text-muted-foreground h-20 text-center">
+                    <TableCell colSpan={6} className="text-muted-foreground h-20 text-center">
                       조회된 그룹 ACL이 없습니다.
                     </TableCell>
                   </TableRow>
@@ -121,6 +123,7 @@ export function GroupAclsPage() {
                     const used = usage(acl.name)
                     return (
                       <TableRow key={acl.id} className="align-top">
+                        <TableCell>{acl.company}</TableCell>
                         <TableCell className="font-mono text-xs font-medium">{acl.name}</TableCell>
                         <TableCell className="text-muted-foreground">{acl.description}</TableCell>
                         <TableCell>

@@ -6,7 +6,7 @@ import { validateAcl } from '@/lib/acl'
 import { MockStoreContext } from './use-mock-store'
 
 // v3: 계정 사용자정보 항목(v2)과 계정 관리이력 추가.
-const STORAGE_KEY = 'remotehub.mock.v3'
+const STORAGE_KEY = 'remotehub.mock.v4'
 type Data = { admins: AdminUser[]; acls: Acl[]; accounts: Account[]; auditLogs: AuditLog[]; accountHistory: AccountHistory[] }
 type Result = string | undefined
 const seeds: Data = { admins, acls, accounts, auditLogs, accountHistory }

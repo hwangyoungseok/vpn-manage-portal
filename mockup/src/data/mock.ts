@@ -38,6 +38,8 @@ export interface Acl {
   description: string
   entries: AclEntry[]
   shared: boolean
+  // 그룹 ACL(shared)만 회사별로 구분한다. 계정별 개별 ACL에는 없다.
+  company?: string
 }
 
 export interface Account {
@@ -231,6 +233,7 @@ export const acls: Acl[] = [
     name: 'ACL_ERP_READONLY',
     description: 'ERP 조회 전용',
     shared: true,
+    company: '이테버스파트너스',
     entries: [
       { destination: '10.20.10.0/24', port: '443', protocol: 'TCP' },
       { destination: '10.20.10.15', port: '1521', protocol: 'TCP' },
@@ -241,6 +244,7 @@ export const acls: Acl[] = [
     name: 'ACL_GROUP_DEV',
     description: '개발 공통 (그룹 ACL)',
     shared: true,
+    company: '이테버스',
     entries: [
       { destination: '10.30.0.0/16', port: '22,443,8080', protocol: 'TCP' },
       { destination: '10.30.5.0/24', port: '3389', protocol: 'TCP' },
@@ -251,6 +255,7 @@ export const acls: Acl[] = [
     name: 'ACL_MES_PROD',
     description: '생산 MES 접근',
     shared: true,
+    company: '세진물산',
     entries: [{ destination: '172.16.40.0/22', port: '443,5432', protocol: 'TCP' }],
   },
   {

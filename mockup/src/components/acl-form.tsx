@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ReactElement } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
+import { companies } from '@/data/mock'
 import type { Acl, AclEntry } from '@/data/mock'
 import { validateAcl } from '@/lib/acl'
 import { Button } from '@/components/ui/button'
@@ -21,6 +22,8 @@ const emptyEntry = (): AclEntry => ({ destination: '', port: '', protocol: 'TCP'
 export function AclForm({ acl, shared = false, existing, onSubmit, onCancel }: Props) {
   const [name, setName] = useState(acl?.name ?? '')
   const [description, setDescription] = useState(acl?.description ?? '')
+  const isShared = acl?.shared ?? shared
+  const [company, setCompany] = useState(acl?.company ?? companies[0].name)
   const [entries, setEntries] = useState<AclEntry[]>(acl ? structuredClone(acl.entries) : [emptyEntry()])
   const [error, setError] = useState<string>()
 
@@ -32,7 +35,8 @@ export function AclForm({ acl, shared = false, existing, onSubmit, onCancel }: P
   return (
     <form className="space-y-4" onSubmit={(event) => {
       event.preventDefault()
-      const next: Acl = { id: acl?.id ?? crypto.randomUUID(), name: name.trim(), description: description.trim(), shared: acl?.shared ?? shared,
+      const next: Acl = { id: acl?.id ?? crypto.randomUUID(), name: name.trim(), description: description.trim(), shared: isShared,
+        ...(isShared ? { company } : {}),
         entries: entries.map((entry) => ({ ...entry, destination: entry.destination.trim(), port: entry.protocol === 'ICMP' ? 'any' : entry.port.replace(/\s/g, '').toLowerCase() })) }
       const validation = validateAcl(next, existing)
       if (validation) return setError(validation)
@@ -40,6 +44,15 @@ export function AclForm({ acl, shared = false, existing, onSubmit, onCancel }: P
       setError(failure)
       if (!failure && !acl) { setName(''); setDescription(''); setEntries([emptyEntry()]) }
     }}>
+      {isShared ? (
+        <div className="space-y-2">
+          <Label htmlFor="acl-company">회사</Label>
+          <Select value={company} onValueChange={(value) => setCompany(value ?? company)}>
+            <SelectTrigger id="acl-company" className="w-60"><SelectValue /></SelectTrigger>
+            <SelectContent>{companies.map((c) => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+      ) : null}
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="acl-name">ACL 이름</Label>
