@@ -6,6 +6,12 @@ export function maskName(name: string): string {
   return `${name[0]}${'*'.repeat(name.length - 2)}${name[name.length - 1]}`
 }
 
+// 이메일 아이디는 앞 글자만 남기고 가린다.
+export function maskEmail(email: string): string {
+  const [id, domain] = email.split('@')
+  return `${id.slice(0, 1)}${'*'.repeat(Math.max(id.length - 1, 2))}@${domain}`
+}
+
 // 엑셀 다운로드에서 제외되는 개인정보 항목 (요구사항 §3).
 export const excludedFromExport = ['이메일', '전화번호', '주소']
 
