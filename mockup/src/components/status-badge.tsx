@@ -1,6 +1,13 @@
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import type { AccountStatus, DeleteReason, RequestStatus, UserType } from '@/data/mock'
+import type {
+  AccountStatus,
+  DeleteReason,
+  RequestStatus,
+  ReviewState,
+  UserType,
+  Validity,
+} from '@/data/mock'
 
 const tone = {
   neutral: 'bg-muted text-muted-foreground border-transparent',
@@ -66,4 +73,18 @@ export const DeleteReasonBadge = ({ reason }: { reason: DeleteReason }) => (
 
 export const ResultBadge = ({ result }: { result: '성공' | '실패' }) => (
   <Pill label={result} variant={result === '성공' ? 'good' : 'bad'} />
+)
+
+const reviewTone: Record<ReviewState, Tone> = {
+  대기: 'warn',
+  확인: 'good',
+  제외: 'neutral',
+}
+
+export const ReviewBadge = ({ review }: { review: ReviewState }) => (
+  <Pill label={review} variant={reviewTone[review]} />
+)
+
+export const ValidityBadge = ({ validity }: { validity: Validity }) => (
+  <Pill label={validity} variant={validity === '성공' ? 'good' : 'bad'} />
 )

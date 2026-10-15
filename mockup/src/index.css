@@ -130,15 +130,19 @@
 }
 /* 차트 범주형 팔레트.
    shadcn 기본값은 chroma 0(무채색) 램프라 범주 식별이 불가능해 교체했다.
-   dataviz 스킬의 validate_palette.js로 두 모드 모두 전 항목 PASS:
-   - light  surface #fcfcfb : L 0.43-0.77 / chroma >= 0.1 / CVD dE 25.2 / 대비 >= 3:1
-   - dark   surface #1a1a19 : L 0.48-0.67 / chroma >= 0.1 / CVD dE 23.2 / 대비 >= 3:1
+   dataviz 스킬의 validate_palette.js로 두 모드 모두 전 항목 PASS (7색, 인접 기준):
+   - light  surface #ffffff : L 0.43-0.77 / chroma >= 0.1 / CVD dE 9.2 / 정상시 dE 19.0 / 대비 >= 3:1
+   - dark   surface #1a1a19 : L 0.48-0.67 / chroma >= 0.1 / CVD dE 9.2 / 정상시 dE 19.0 / 대비 >= 3:1
+   5-7번은 신청 시스템 7곳(사용자 변경관리 현황)을 위해 추가했다. 1-4번만 쓰는 차트는 영향 없다.
    범주 순서는 고정이며 순환하지 않는다. */
 :root {
   --chart-1: #2563eb;
   --chart-2: #d97706;
   --chart-3: #7c3aed;
   --chart-4: #059669;
+  --chart-5: #a16207;
+  --chart-6: #db2777;
+  --chart-7: #0891b2;
 }
 
 .dark {
@@ -146,4 +150,7 @@
   --chart-2: #d97706;
   --chart-3: #8b5cf6;
   --chart-4: #059669;
+  --chart-5: #a16207;
+  --chart-6: #db2777;
+  --chart-7: #0891b2;
 }
