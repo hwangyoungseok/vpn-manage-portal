@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import {
   Building2,
+  ChevronDown,
   ClipboardList,
   FileBarChart,
   Globe2,
@@ -31,21 +32,32 @@ type NavItem = {
   req: string
 }
 
-const nav: { label?: string; items: NavItem[] }[] = [
+const nav: { label: string; items: NavItem[] }[] = [
   {
+    label: '신청관리',
     items: [
-      { to: '/', label: '대시보드', icon: LayoutDashboard, req: '' },
       { to: '/requests', label: '신청 목록', icon: ClipboardList, req: '§2' },
+    ],
+  },
+  {
+    label: '사용자 관리',
+    items: [
       { to: '/accounts', label: '계정 · 정책', icon: Users, req: '§3' },
-      { to: '/companies', label: '그룹사 관리', icon: Building2, req: '§4' },
       { to: '/ip-ranges', label: 'IP 대역 · 고정 IP', icon: Globe2, req: '§5 §6' },
       { to: '/deleted', label: '삭제 사용자', icon: Trash2, req: '§8' },
+    ],
+  },
+  {
+    label: '현황/보고',
+    items: [
+      { to: '/', label: '대시보드', icon: LayoutDashboard, req: '' },
       { to: '/reports', label: '월간 리포팅', icon: FileBarChart, req: '§12' },
     ],
   },
   {
-    label: '관리',
+    label: '시스템관리',
     items: [
+      { to: '/companies', label: '그룹사 관리', icon: Building2, req: '§4' },
       { to: '/admins', label: '관리자', icon: ShieldCheck, req: '§9' },
       { to: '/permissions', label: '권한', icon: KeyRound, req: '§9' },
       { to: '/audit', label: '감사 로그', icon: ScrollText, req: '§11' },
@@ -71,6 +83,7 @@ export function AppShell() {
   const { error, reset } = useMockStore()
   const { dark, toggle } = useTheme()
   const [open, setOpen] = useState(false)
+  const [collapsedSections, setCollapsedSections] = useState<string[]>([])
   const location = useLocation()
 
   useEffect(() => {
@@ -83,11 +96,11 @@ export function AppShell() {
         {/* 사이드바 */}
         <aside
           className={cn(
-            'fixed inset-y-0 left-0 z-40 w-64 shrink-0 border-r bg-background transition-transform lg:sticky lg:top-0 lg:h-svh lg:translate-x-0',
+            'fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col border-r bg-background transition-transform lg:sticky lg:top-0 lg:h-svh lg:translate-x-0',
             open ? 'translate-x-0' : '-translate-x-full',
           )}
         >
-          <div className="flex h-16 items-center gap-2 px-5">
+          <div className="flex h-16 shrink-0 items-center gap-2 px-5">
             <div className="grid size-8 place-items-center rounded-md bg-primary text-primary-foreground">
               <ShieldCheck className="size-4" />
             </div>
@@ -97,15 +110,24 @@ export function AppShell() {
             </div>
           </div>
           <Separator />
-          <nav className="space-y-1 p-3">
+          <nav aria-label="주 메뉴" className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3">
             {nav.map((section, i) => (
-              <div key={section.label ?? i} className={i > 0 ? 'pt-4' : undefined}>
-                {section.label ? (
-                  <div className="text-muted-foreground/70 px-3 pb-1 text-[11px] font-medium tracking-wide">
+              <section key={section.label} aria-label={section.label} className={i > 0 ? 'pt-4' : undefined}>
+                <h2>
+                  <button
+                    type="button"
+                    aria-expanded={!collapsedSections.includes(section.label)}
+                    aria-controls={`nav-section-${i}`}
+                    className="text-muted-foreground hover:bg-accent/50 hover:text-foreground mb-1 flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2 text-left text-xs font-medium focus-visible:outline-2 focus-visible:outline-ring"
+                    onClick={() => setCollapsedSections((prev) => prev.includes(section.label)
+                      ? prev.filter((label) => label !== section.label)
+                      : [...prev, section.label])}
+                  >
                     {section.label}
-                  </div>
-                ) : null}
-                <div className="space-y-1">
+                    <ChevronDown aria-hidden="true" className={cn('size-3.5 transition-transform motion-reduce:transition-none', collapsedSections.includes(section.label) && '-rotate-90')} />
+                  </button>
+                </h2>
+                <div id={`nav-section-${i}`} hidden={collapsedSections.includes(section.label)} className="space-y-1">
                   {section.items.map((item) => (
                     <NavLink
                       key={item.to}
@@ -130,10 +152,10 @@ export function AppShell() {
                     </NavLink>
                   ))}
                 </div>
-              </div>
+              </section>
             ))}
           </nav>
-          <div className="absolute inset-x-0 bottom-0 p-3">
+          <div className="shrink-0 p-3">
             <div className="bg-muted/50 rounded-md p-3 text-xs leading-relaxed">
               <Badge variant="outline" className="mb-2">
                 목업
