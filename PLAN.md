@@ -38,6 +38,7 @@
 | P0-29 신청사·VPN ID 표시 변경 | frontend-dev | done | P0-28 | 신청사 / 구분 및 VPN ID 헤더, 신청 데이터의 VPN+숫자사번 형식 적용, 빌드·lint 확인 |
 | P0-30 신청 목록 요청 ACL을 VPN IP로 교체 | frontend-dev | done | P0-29 | 신청사별 10.x.x.x 고정 IP 목업 데이터 및 VPN IP 검색 적용, 빌드·lint 확인 |
 | P0-31 신청 목록 만료일 열 추가 | frontend-dev | done | P0-30 | 근거 시스템 열 제거, 신청일시 바로 오른쪽에 만료일 표시, 빌드·lint 확인 |
+| P0-32 그룹사 관리 수정·삭제 및 그룹 정책 관리 메뉴 추가 | frontend-dev | done | P0-9 | IP 대역 열 제거, 수정 모달·삭제 동작, 원본 IAMS-VPN 그룹 정책 관리 기준 화면을 그룹사 관리와 그룹 ACL 관리 사이에 추가, 빌드·lint 확인 |
 | P0-23 사이드바 메뉴를 업무별 네 카테고리로 그룹화 | frontend-dev | done | P0-2 | 신청관리·사용자 관리·현황/보고·시스템관리, 항상 펼침, 모바일 스크롤 확인 |
 | P0-24 사이드바 카테고리 접기·펼치기 | frontend-dev | done | P0-23 | 기본 펼침, 독립 토글·화살표, 키보드·모바일 검증 완료 |
 | P0-23 Legacy VPN 회의를 범위·WBS·공수 산정 자료로 재정리 | planner | done | P0-20 | [`docs/legacy-vpn-review.md`](docs/legacy-vpn-review.md). 실제 시스템·데이터 검증은 수주 후, 범위·공수는 미확정 |

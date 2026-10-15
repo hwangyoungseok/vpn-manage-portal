@@ -10,6 +10,7 @@ import { CodesPage } from '@/pages/codes'
 import { CompaniesPage } from '@/pages/companies'
 import { DashboardPage } from '@/pages/dashboard'
 import { GroupAclsPage } from '@/pages/group-acls'
+import { GroupPoliciesPage } from '@/pages/group-policies'
 import { DeletedUsersPage } from '@/pages/deleted-users'
 import { IpRangesPage } from '@/pages/ip-ranges'
 import { LoginPage } from '@/pages/login'
@@ -30,7 +31,8 @@ export default function App() {
             <Route path="/requests/:id" element={<RequestDetailPage />} />
             <Route path="/accounts" element={<AccountsPage />} />
             <Route path="/companies" element={<CompaniesPage />} />
-            <Route path="/group-acls" element={<GroupAclsPage />} />
+            <Route path="/group-policies" element={<GroupPoliciesPage />} />
+            <Route path="/group-acls"element={<GroupAclsPage />} />
             <Route path="/ip-ranges" element={<IpRangesPage />} />
             <Route path="/deleted" element={<DeletedUsersPage />} />
             <Route path="/admins" element={<AdminsPage />} />

@@ -199,6 +199,32 @@ export const companies: Company[] = [
   { id: 'C05', name: '세진물산', code: 'SJM', userCount: 23, ipRangeCount: 1, active: false },
 ]
 
+// 그룹 정책: 그룹사 × 사용자구분별 VPN 그룹과 인증 방식 (원본 IAMS-VPN 그룹 정책 관리 화면 기준).
+export type PolicyKind = '개별' | '그룹'
+export type AuthSource = '공용' | '자사'
+export const policyKinds: PolicyKind[] = ['개별', '그룹']
+export const authSources: AuthSource[] = ['공용', '자사']
+
+export interface GroupPolicy {
+  id: string
+  company: string
+  userType: UserType
+  vpnGroupId: string
+  policyKind: PolicyKind
+  ad: AuthSource
+  otp: AuthSource
+}
+
+export const groupPolicies: GroupPolicy[] = [
+  { id: 'GP01', company: '이테버스', userType: '정직원', vpnGroupId: 'ETV', policyKind: '그룹', ad: '자사', otp: '공용' },
+  { id: 'GP02', company: '이테버스', userType: '협력사', vpnGroupId: 'HMGPTR', policyKind: '개별', ad: '공용', otp: '공용' },
+  { id: 'GP03', company: '이테버스파트너스', userType: '정직원', vpnGroupId: 'ETVP', policyKind: '그룹', ad: '자사', otp: '공용' },
+  { id: 'GP04', company: '이테버스파트너스', userType: '협력사', vpnGroupId: 'HMGPTR', policyKind: '개별', ad: '공용', otp: '공용' },
+  { id: 'GP05', company: '한성테크', userType: '협력사', vpnGroupId: 'HSTPTR', policyKind: '개별', ad: '자사', otp: '자사' },
+  { id: 'GP06', company: '한성테크', userType: '정직원', vpnGroupId: 'HST', policyKind: '개별', ad: '자사', otp: '자사' },
+  { id: 'GP07', company: '대명정보시스템', userType: '협력사', vpnGroupId: 'HMGPTR', policyKind: '개별', ad: '공용', otp: '공용' },
+]
+
 export const acls: Acl[] = [
   {
     id: 'ACL-ERP-RO',
