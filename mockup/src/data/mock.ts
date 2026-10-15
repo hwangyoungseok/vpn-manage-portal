@@ -1347,3 +1347,26 @@ export const retentionPolicy: { userType: UserType; maxTerm: string; idleDelete:
   { userType: '생산협력사', maxTerm: '1년', idleDelete: '1년 (확정 필요)' },
   { userType: 'VIP', maxTerm: '1년', idleDelete: '6개월 이상 미접속' },
 ]
+
+// 권한 매트릭스: 역할(Admin, 운영자)별 허용 여부 (요구사항 §9).
+export type PermissionRole = 'admin' | 'operator'
+export interface PermissionRow {
+  label: string
+  detail: string
+  admin: boolean
+  operator: boolean
+}
+
+export const permissions: PermissionRow[] = [
+  { label: '계정 생성 · 삭제', detail: 'VPN 사용자 계정 등록과 삭제', admin: true, operator: true },
+  { label: '정책 생성 · 삭제', detail: 'ACL 생성, 매핑, 해제', admin: true, operator: true },
+  { label: 'IP 할당', detail: '대역 내 고정 IP 할당과 회수', admin: true, operator: true },
+  { label: '목록 확인 · 다운로드', detail: '계정 · 정책 조회와 엑셀 내보내기', admin: true, operator: true },
+  { label: '신청 처리', detail: '연계 신청 승인 · 반려', admin: true, operator: true },
+  { label: '그룹사 관리', detail: '그룹사 등록 · 수정, 그룹 정책 · 그룹 ACL 관리', admin: true, operator: true },
+  { label: '감사 로그 조회', detail: '관리자 행위 내역 열람', admin: true, operator: true },
+  { label: '관리자 생성 · 삭제', detail: '관리자 계정 추가와 삭제', admin: true, operator: false },
+  { label: '권한 변경', detail: '역할 부여와 회수', admin: true, operator: false },
+  { label: '접속 허용 IP 관리', detail: '시스템 접속 가능 IP 등록 · 삭제', admin: true, operator: false },
+  { label: '계정 잠김 해제', detail: '타 관리자의 잠김 해제', admin: true, operator: false },
+]

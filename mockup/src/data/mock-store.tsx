@@ -1,20 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { accountHistory, accountSnapshot, accounts, acls, admins, auditLogs } from './mock'
-import type { Account, AccountHistory, AccountHistoryKind, Acl, AdminUser, AuditLog } from './mock'
+import { accountHistory, accountSnapshot, accounts, acls, admins, auditLogs, permissions } from './mock'
+import type { Account, AccountHistory, AccountHistoryKind, Acl, AdminUser, AuditLog, PermissionRole, PermissionRow } from './mock'
 import { validateAcl } from '@/lib/acl'
 import { MockStoreContext } from './use-mock-store'
 
 // v3: 계정 사용자정보 항목(v2)과 계정 관리이력 추가.
-const STORAGE_KEY = 'remotehub.mock.v4'
-type Data = { admins: AdminUser[]; acls: Acl[]; accounts: Account[]; auditLogs: AuditLog[]; accountHistory: AccountHistory[] }
+const STORAGE_KEY = 'remotehub.mock.v5'
+type Data = { admins: AdminUser[]; acls: Acl[]; accounts: Account[]; auditLogs: AuditLog[]; accountHistory: AccountHistory[]; permissions: PermissionRow[] }
 type Result = string | undefined
-const seeds: Data = { admins, acls, accounts, auditLogs, accountHistory }
+const seeds: Data = { admins, acls, accounts, auditLogs, accountHistory, permissions }
 
 // Validate persisted rows against the seed shape before any page consumes them.
 function hasShape(value: unknown, sample: unknown): boolean {
   if (sample === null) return value === null || typeof value === 'string'
-  if (Array.isArray(sample)) return Array.isArray(value) && value.every((item) => hasShape(item, sample[0]))
+  // 선택 필드(예: 그룹 ACL에만 있는 company) 때문에 행마다 모양이 다를 수 있어 시드 행 중 하나와 맞으면 통과시킨다.
+  if (Array.isArray(sample)) {
+    return Array.isArray(value) && value.every((item) => sample.length ? sample.some((row) => hasShape(item, row)) : hasShape(item, undefined))
+  }
   if (typeof sample === 'object') {
     return value !== null && typeof value === 'object' && Object.entries(sample).every(([key, field]) =>
       hasShape((value as Record<string, unknown>)[key], field))
@@ -95,6 +98,14 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     return commit({ ...prev, admins: prev.admins.filter((item) => item.id !== id) }, { action: '관리자 삭제', target: admin.account, detail: `${admin.name} 관리자 삭제` })
   }
 
+  function savePermission(label: string, role: PermissionRole, allowed: boolean): Result {
+    const prev = current.current
+    if (!prev.permissions.some((item) => item.label === label)) return '권한을 찾을 수 없습니다.'
+    return commit({ ...prev, permissions: prev.permissions.map((item) => item.label === label ? { ...item, [role]: allowed } : item) }, {
+      action: '권한 변경', target: label, detail: `${role === 'admin' ? 'Admin' : '운영자'} ${allowed ? '불가 → 허용' : '허용 → 불가'}`,
+    })
+  }
+
   function saveAcl(acl: Acl): Result {
     const prev = current.current
     const validation = validateAcl(acl, prev.acls)
@@ -153,5 +164,5 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     return commit(withHistory({ ...prev, accounts: prev.accounts.filter((item) => item.id !== id) }, account, '삭제'), { action: '계정 삭제', target: account.account, detail: '사용자 관리에서 삭제' })
   }
 
-  return <MockStoreContext.Provider value={{ ...data, error, saveAdmin, deleteAdmin, saveAcl, deleteAcl, savePolicies, saveAccount, deleteAccount, reset: () => commit(structuredClone(seeds)) }}>{children}</MockStoreContext.Provider>
+  return <MockStoreContext.Provider value={{ ...data, error, saveAdmin, deleteAdmin, savePermission, saveAcl, deleteAcl, savePolicies, saveAccount, deleteAccount, reset: () => commit(structuredClone(seeds)) }}>{children}</MockStoreContext.Provider>
 }

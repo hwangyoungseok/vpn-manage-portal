@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { Check, Minus } from 'lucide-react'
 
 import { PageHeader } from '@/components/layout/page-header'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -11,24 +13,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { admins } from '@/data/mock'
+import { useMockStore } from '@/data/use-mock-store'
 import type { AdminRole } from '@/data/mock'
 
 // P0-12 권한 관리 (요구사항 §9). 관리자 계정 관리와 분리된 화면이다.
-
-const permissions: { label: string; detail: string; admin: boolean; operator: boolean }[] = [
-  { label: '계정 생성 · 삭제', detail: 'VPN 사용자 계정 등록과 삭제', admin: true, operator: true },
-  { label: '정책 생성 · 삭제', detail: 'ACL 생성, 매핑, 해제', admin: true, operator: true },
-  { label: 'IP 할당', detail: '대역 내 고정 IP 할당과 회수', admin: true, operator: true },
-  { label: '목록 확인 · 다운로드', detail: '계정 · 정책 조회와 엑셀 내보내기', admin: true, operator: true },
-  { label: '신청 처리', detail: '연계 신청 승인 · 반려', admin: true, operator: true },
-  { label: '그룹사 관리', detail: '그룹사 등록 · 수정, 그룹 ACL 관리', admin: true, operator: true },
-  { label: '감사 로그 조회', detail: '관리자 행위 내역 열람', admin: true, operator: true },
-  { label: '관리자 생성 · 삭제', detail: '관리자 계정 추가와 삭제', admin: true, operator: false },
-  { label: '권한 변경', detail: '역할 부여와 회수', admin: true, operator: false },
-  { label: '접속 허용 IP 관리', detail: '시스템 접속 가능 IP 등록 · 삭제', admin: true, operator: false },
-  { label: '계정 잠김 해제', detail: '타 관리자의 잠김 해제', admin: true, operator: false },
-]
 
 const roles: { role: AdminRole; description: string; tone: string }[] = [
   {
@@ -58,13 +46,27 @@ function Allowed({ ok }: { ok: boolean }) {
   )
 }
 
+function Toggle({ ok, label, onClick }: { ok: boolean; label: string; onClick: () => void }) {
+  return (
+    <Button variant="ghost" size="sm" aria-pressed={ok} aria-label={label} onClick={onClick}>
+      <Allowed ok={ok} />
+    </Button>
+  )
+}
+
 export function PermissionsPage() {
+  const { admins, permissions, savePermission } = useMockStore()
+  const [notice, setNotice] = useState<{ text: string; error?: boolean }>()
+  const toggle = (label: string, role: 'admin' | 'operator', allowed: boolean) => {
+    const failure = savePermission(label, role, !allowed)
+    setNotice(failure ? { text: failure, error: true } : { text: `${label} 권한을 ${role === 'admin' ? 'Admin' : '운영자'}에서 ${allowed ? '불가' : '허용'}으로 변경했습니다.` })
+  }
   return (
     <>
       <PageHeader
         title="권한"
         requirement="§9"
-        description="역할별로 수행 가능한 작업을 정의합니다. 역할 부여는 관리자 화면에서 합니다."
+        description="역할별로 수행 가능한 작업을 정의합니다. 역할 부여는 관리자 화면에서 합니다. 권한 매트릭스의 허용 · 불가를 눌러 바꿀 수 있습니다."
       />
 
       <div className="mb-4 grid gap-4 md:grid-cols-2">
@@ -106,7 +108,7 @@ export function PermissionsPage() {
         <CardHeader>
           <CardTitle className="text-base">권한 매트릭스</CardTitle>
           <CardDescription>
-            운영자는 관리자 생성 · 삭제, 권한 변경, 접속 허용 IP 관리를 할 수 없습니다.
+            {notice ? notice.text : '허용 · 불가를 눌러 역할별 권한을 바꿉니다. 변경은 저장됩니다.'}
           </CardDescription>
         </CardHeader>
         <CardContent className="px-0">
@@ -126,10 +128,10 @@ export function PermissionsPage() {
                     <TableCell className="font-medium">{p.label}</TableCell>
                     <TableCell className="text-muted-foreground text-xs">{p.detail}</TableCell>
                     <TableCell className="text-center">
-                      <Allowed ok={p.admin} />
+                      <Toggle ok={p.admin} label={`${p.label} Admin`} onClick={() => toggle(p.label, 'admin', p.admin)} />
                     </TableCell>
                     <TableCell className="text-center">
-                      <Allowed ok={p.operator} />
+                      <Toggle ok={p.operator} label={`${p.label} 운영자`} onClick={() => toggle(p.label, 'operator', p.operator)} />
                     </TableCell>
                   </TableRow>
                 ))}
