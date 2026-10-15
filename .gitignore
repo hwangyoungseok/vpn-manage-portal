@@ -83,3 +83,6 @@ out/
 .env.*
 !.env.example
 *.local
+
+# Claude Code 로컬 worktree
+.claude/worktrees/
